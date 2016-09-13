@@ -5,13 +5,13 @@ Contributors :
 
 Patrick Dorton 
 
-Decode and functions
+Decode and Execute
 
 
 
 Andrew Maida  
 
-Instructions and functions
+Instructions and Fetch
 
 
 
