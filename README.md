@@ -1,11 +1,34 @@
 # COP3402
 Systems Software projects
 
-Contributors : \n
-Patrick Dorton \n
-Andrew Maida   \n
-David Almeida  \n
-Michael Garro  \n
+Contributors : 
+
+Patrick Dorton 
+
+Decode and functions
+
+
+
+Andrew Maida  
+
+Instructions and functions
+
+
+
+David Almeida 
+
+Functions
+
+
+
+Michael Garro 
+
+Functions
+
+
+
+
+
 
 
 
