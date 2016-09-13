@@ -1,11 +1,11 @@
 # COP3402
 Systems Software projects
 
-Contributors :
-Patrick Dorton 
-Andrew Maida
-David Almeida
-Michael Garro
+Contributors : \n
+Patrick Dorton \n
+Andrew Maida   \n
+David Almeida  \n
+Michael Garro  \n
 
 
 
