@@ -31,11 +31,13 @@ int sp;
 int pc;
 int bp;
 
+
+/*-------------------------User Defined Functions-----------------------------------*/
+
 Instruction Fetch(int pc);
-void Execute(Instruction ir);
+void Execute(Instruction ir, instruction* instructionRegister, int* haltFlag)
 
-
-
+/*-------------------------End of Function Prototypes-------------------------------*/
 
 int main()
 {
@@ -74,9 +76,39 @@ int main()
 	{// go through all the instructions 
 		// first do a fetch for the new instruction 
 		Fetch(instructions[pc], &instructionRegister);
-	}
+		//then increment the pc 
+		pc++;
+		Execute(output, &instructionRegister, &haltFlag);
+		
+		if(instructionRegister.op == 5)
+		{// if a CAL function
+			calFlag = 1;
+			PrintStack(output, 0 , instructions);
+		}
+		else if(instructionRegister.op == 4 && instructionRegister.l > 0)
+		{
+			calFlag = 0;
+		}
+		else
+		{
+			PrintStack(output, calFlag, instructions);
+		}
+		
+		fprintf(output, "\n");
+		if(haltFlag == 1)
+		{
+			break;
+		}
 	
-
+	}// end of current instruction 
+	// end of all instructions
+	
+	
+	
+	
+	//close files before exiting 
+	fclose(input);
+	fclose(output);
 
 
 
@@ -84,17 +116,98 @@ int main()
 	return 0;
 }
 
-void Fetch(instruction currentInstruction, Intsruction* instructionRegister)
-{// chose to pass by reference to keep the instructions having less changes throughout 
-//pull current instruction and load it into the instruction register 
-	instructionRegister->op = currentInstruction.op;
-	instructionRegister->l = currentInstruction.l;
-	instructionRegister->m = curretnInstruction.m;
+Instruction ReadInput(File* input, Instruction intructions[], int* linecount)
+{
+	int i = 0 ; 
+	while(!feof(input))
+	{// read until end of file
+	
+		// read in each instruction to a new position in the array
+		fscanf(input, "%d %d %d", &instructions[i].op, &instructions[i].l , &instructions[i].m);
+		
+		
+		
+		if(instructions[i].l >= MAX_LEXI_LEVELS)
+		{
+			printf("Invalid instruction: Level must be no more than 3.\n");
+		}
+		i++;
+		if(i == MAX_CODE_LENGTH)
+		{
+			printf("Max code length of %d reached.\n", MAX_CODE_LENGTH);
+		}
+		
+	
+	}
+	// set linecount to total number of instructions 
+	*lineCount = i;
+	return *instructions;
+}
+
+void Output(FILE* output, int lineCount, Instruction instructions[])
+{
+	int i = 0 ; 
+	for(i = 0 ; i < lineCount; i++)
+	{
+		if( i < 9 )
+		{
+			fprintf(output, " ");
+			
+		}
+		switch(instructions[i].op)
+		{
+			case 1: 
+				fprintf(output, "%d    LIT   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+        			break;
+			case 2:
+				fprintf(output, "%d    OPR   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+			case 3:
+				fprintf(output, "%d    LOD   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 4:
+                		fprintf(output, "%d    STO   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 5:
+                		fprintf(output, "%d    CAL   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 6:
+                		fprintf(output, "%d    INC   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 7:
+                		fprintf(output, "%d    JMP   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 8:
+                		fprintf(output, "%d    JPC   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	case 9:
+                		fprintf(output, "%d    SIO   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		break;
+                	default:
+                		fprintf(output, "Invalid Instruction.\n");
+      				break;	
+		}
+	}
+	
+	fprintf(output, "\n");
 }
 
 
 
-void Execute(Instruction ir)
+
+
+/*pulls instruction from the current instruction and loads it into the instruction register*/ 
+void Fetch(instruction ir, Intsruction* instructionRegister)
+{// chose to pass by reference to keep the instructions having less changes throughout 
+//pull current instruction and load it into the instruction register 
+	instructionRegister->op = ir.op;
+	instructionRegister->l = ir.l;
+	instructionRegister->m = ir.m;
+}
+
+
+
+void Execute(Instruction ir, &instructionRegister, &haltFlag)
 {
     switch (ir.op)
     {
