@@ -30,20 +30,20 @@ int stack[100];
 int sp;
 int pc;
 int bp;
-
+int lineCount = 0;
 
 /*-------------------------User Defined Functions-----------------------------------*/
 
-Instruction Fetch(int pc);
-void Execute(Instruction ir, instruction* instructionRegister, int* haltFlag)
-
+void Fetch(Instruction ir, Instruction* instructionRegister);
+void Execute(FILE* output, Instruction* instructionRegister, int* haltFlag);
+void ReadInput(FILE* input, Instruction* intructions, int* lineCount);
 /*-------------------------End of Function Prototypes-------------------------------*/
 
-int main()
+int main(int argc, const char* argv[])
 {
 	FILE* input, *output;
 	
-	Instruction Instructions[MAX_CODE_LENGTH];
+	Instruction instructions[MAX_CODE_LENGTH];
 	Instruction instructionRegister;
 	
     sp = 0;
@@ -60,19 +60,19 @@ int main()
 	input = fopen(argv[1], "r");
 	output = fopen(argv[2], "w");
 	
-	if(input == null)
+	if(input == NULL)
 	{
 		printf("File Not Found\n");
 		return -1;//return neg one will let programmer know that it returned from file not found
 	}
 	// read in the input file and place into the array of instructions
-	*instructions = ReadInput(intput, instructions, &lineCount);
+ReadInput(input, instructions, &lineCount);
 	
-	WriteInstructions(output, linecount, instructions);
+	WriteInstructions(output, lineCount, instructions);
 	
 	fprintf(output, "STACK");
 	
-	while(pc < linecount)
+	while(pc < lineCount)
 	{// go through all the instructions 
 		// first do a fetch for the new instruction 
 		Fetch(instructions[pc], &instructionRegister);
@@ -116,7 +116,7 @@ int main()
 	return 0;
 }
 
-Instruction ReadInput(File* input, Instruction intructions[], int* lineCount)
+void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 {
 	int i = 0 ; 
 	while(!feof(input))
@@ -141,7 +141,6 @@ Instruction ReadInput(File* input, Instruction intructions[], int* lineCount)
 	}
 	// set linecount to total number of instructions 
 	*lineCount = i;
-	return *instructions;
 }
 
 void Output(FILE* output, int lineCount, Instruction instructions[])
@@ -197,7 +196,7 @@ void Output(FILE* output, int lineCount, Instruction instructions[])
 
 
 /*pulls instruction from the current instruction and loads it into the instruction register*/ 
-void Fetch(instruction ir, Intsruction* instructionRegister)
+void Fetch(Instruction ir, Instruction* instructionRegister)
 {// chose to pass by reference to keep the instructions having less changes throughout 
 //pull current instruction and load it into the instruction register 
 	instructionRegister->op = ir.op;
@@ -207,16 +206,16 @@ void Fetch(instruction ir, Intsruction* instructionRegister)
 
 
 
-void Execute(Instruction ir, &instructionRegister, &haltFlag)
+void Execute(FILE* output, Instruction  ir, int* haltFlag)
 {
     switch (ir.op)
     {
         case 01: //LIT
             sp = sp + 1;
-            stack[sp] = ir.m;
+            stack[sp] = *ir.m;
             break;
         case 02: //OPR
-            switch (ir.m)
+            switch (*ir.m)
             {
 
                 case 1: //NEG
@@ -286,31 +285,30 @@ void Execute(Instruction ir, &instructionRegister, &haltFlag)
 
         case 03:  //LOD
             sp = sp + 1;
-            stack[sp] = stack [base(ir.l, bp) + ir.m];
+            stack[sp] = stack [base(*ir.l, bp) + ir.m];
             break;
 
         case 04:  //STO
-            stack[ base(ir.l, bp) + ir.m] = stack[sp];
+            stack[ base(*ir.l, bp) + *ir.m] = stack[sp];
             sp = sp - 1;
             break;
 
         case 05: //CAL
             stack[sp + 1] = 0;                //return value (FV)
-            stack[sp + 2] = base(ir.l, bp);   //static link (SL)
+            stack[sp + 2] = base(*ir.l, bp);   //static link (SL)
             stack[sp + 3] = bp;               //dynamic link (DL)
             stack[sp + 4] = pc;               //return address (RA)
             bp = sp + 1;
-            pc = ir.m;
+            pc = *ir.m;
             break;
 
         case 06:  //INC
-            sp = sp + ir.m;
+            sp = sp + *ir.m;
             break;
 
         case 07:  //JMP
-            pc = ir.m;
+            pc = *ir.m;
             break;
     }
 }
-
 
