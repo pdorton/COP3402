@@ -116,7 +116,7 @@ int main()
 	return 0;
 }
 
-Instruction ReadInput(File* input, Instruction intructions[], int* linecount)
+Instruction ReadInput(File* input, Instruction intructions[], int* lineCount)
 {
 	int i = 0 ; 
 	while(!feof(input))
