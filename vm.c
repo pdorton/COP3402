@@ -48,21 +48,48 @@ int main()
     bp = 1;
     pc = 0;
 
-	int calFlag = 0;
-	int haltFlag = 0;
+	int calFlag = 0; 
+	int haltFlag = 0; // flag for if halt 
 	
     stack[1] = 0;
     stack[2] = 0;
     stack[3] = 0;
 
+	input = fopen(argv[1], "r");
+	output = fopen(argv[2], "w");
+	
+	if(input == null)
+	{
+		printf("File Not Found\n");
+		return -1;//return neg one will let programmer know that it returned from file not found
+	}
+	// read in the input file and place into the array of instructions
+	*instructions = ReadInput(intput, instructions, &lineCount);
+	
+	WriteInstructions(output, linecount, instructions);
+	
+	fprintf(output, "STACK");
+	
+	while(pc < linecount)
+	{// go through all the instructions 
+		// first do a fetch for the new instruction 
+		Fetch(instructions[pc], &instructionRegister);
+	}
+	
+
+
+
+
+
 	return 0;
 }
 
-Instruction Fetch(int pc)
-{
-	ir = code[pc];
-	execute(ir);
-	pc = pc+1;
+void Fetch(instruction currentInstruction, Intsruction* instructionRegister)
+{// chose to pass by reference to keep the instructions having less changes throughout 
+//pull current instruction and load it into the instruction register 
+	instructionRegister->op = currentInstruction.op;
+	instructionRegister->l = currentInstruction.l;
+	instructionRegister->m = curretnInstruction.m;
 }
 
 
