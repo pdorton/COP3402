@@ -39,12 +39,18 @@ void Execute(Instruction ir);
 
 int main()
 {
+	FILE* input, *output;
+	
+	Instruction Instructions[MAX_CODE_LENGTH];
+	Instruction instructionRegister;
+	
     sp = 0;
     bp = 1;
     pc = 0;
 
-    Instruction ir;
-
+	int calFlag = 0;
+	int haltFlag = 0;
+	
     stack[1] = 0;
     stack[2] = 0;
     stack[3] = 0;
@@ -54,7 +60,9 @@ int main()
 
 Instruction Fetch(int pc)
 {
-
+	ir = code[pc];
+	execute(ir);
+	pc = pc+1;
 }
 
 
