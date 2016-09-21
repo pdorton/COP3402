@@ -36,7 +36,7 @@ int lineCount = 0;
 
 void Fetch(Instruction ir, Instruction* instructionRegister);
 void Execute(FILE* output, Instruction ir, int* haltFlag);
-void ReadInput(FILE* input, Instruction* intructions, int* lineCount);
+void ReadInput(FILE* input, Instruction* intructions, int* lineCount); // function ensured to function. 
 
 /*-------------------------End of Function Prototypes-------------------------------*/
 
@@ -76,11 +76,11 @@ int main(int argc, const char* argv[])
 	// read in the input file and place into the array of instructions
 ReadInput(input, instructions, &lineCount);
 	
-	
+
 	//WriteInstructions(output, lineCount, instructions);
 	
 	fprintf(output, "STACK");
-	
+	//pc = 0 pre initilized earlier
 	while(pc < lineCount)
 	{// go through all the instructions 
 		// first do a fetch for the new instruction 
@@ -134,7 +134,7 @@ void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 		// read in each instruction to a new position in the array
 		fscanf(input, "%d %d %d", &instructions[i].op, &instructions[i].l , &instructions[i].m);
 		
-		
+		printf("op code is: %d L =  %d M =  %d \n", instructions[i].op, instructions[i].l, instructions[i].m);
 		
 		if(instructions[i].l >= MAX_LEXI_LEVELS)
 		{
@@ -150,6 +150,11 @@ void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 	}
 	// set linecount to total number of instructions 
 	*lineCount = i;
+
+	
+		printf("%d \n",i );
+	
+	
 }
 
 void Output(FILE* output, int lineCount, Instruction instructions[])
