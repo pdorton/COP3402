@@ -79,7 +79,6 @@ ReadInput(input, instructions, &lineCount);
 
 	WriteInstructions(output, lineCount, instructions);
 
-	fprintf(output, "STACK");
 	//pc = 0 pre initilized earlier
 	while(pc < lineCount)
 	{// go through all the instructions
@@ -172,108 +171,109 @@ void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
 			case 2:
 				switch(instructions[i].m)
 				{
-					case0: //RET
+					case 0: //RET
 					{
-
+						fprintf(output, "\t%d\tRET\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case1: //NEG
+					case 1: //NEG
 					{
-
+						fprintf(output, "\t%d\tNEG\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case2: //ADD
+					case 2: //ADD
 					{
-
+						fprintf(output, "\t%d\tADD\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case3: //SUB
+					case 3: //SUB
 					{
-
+						fprintf(output, "\t%d\tSUB\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case4: //MUL
+					case 4: //MUL
 					{
-
+						fprintf(output, "\t%d\tMUL\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case5: //DIV
+					case 5: //DIV
 					{
-
+						fprintf(output, "\t%d\tDIV\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case6: //ODD
+					case 6: //ODD
 					{
-
+						fprintf(output, "\t%d\tODD\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case7: //MOD
+					case 7: //MOD
 					{
-
+						fprintf(output, "\t%d\tMOD\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case8: //EQL
+					case 8: //EQL
 					{
-
+						fprintf(output, "\t%d\tEQL\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case9: //NEQ
+					case 9: //NEQ
 					{
-
+						fprintf(output, "\t%d\tNEQ\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case10: //LSS
+					case 10: //LSS
 					{
-
+						fprintf(output, "\t%d\tLSS\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case11: //LEQ
+					case 11: //LEQ
 					{
-
+						fprintf(output, "\t%d\tLEQ\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case12: //GTR
+					case 12: //GTR
 					{
-
+						fprintf(output, "\t%d\tGTR\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
 
 
-					case13: //GEQ
+					case 13: //GEQ
 					{
-
+						fprintf(output, "\t%d\tGEQ\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
+					
 				}
+				break;
 
 
-
-				fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
-                		break;
+			//	fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
+                		//break;
 			case 3:
 				fprintf(output, "\t%d\tLOD\t\t\t\t%d\n", i,  instructions[i].m);
                 		break;
