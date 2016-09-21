@@ -36,7 +36,7 @@ int lineCount = 0;
 
 void Fetch(Instruction ir, Instruction* instructionRegister);
 void Execute(FILE* output, Instruction ir, int* haltFlag);
-void ReadInput(FILE* input, Instruction* intructions, int* lineCount); // function ensured to function. 
+void ReadInput(FILE* input, Instruction* intructions, int* lineCount); // function ensured to function.
 
 /*-------------------------End of Function Prototypes-------------------------------*/
 
@@ -50,24 +50,24 @@ int base(int l, int bp);
 int main(int argc, const char* argv[])
 {
 	FILE* input, *output;
-	
+
 	Instruction instructions[MAX_CODE_LENGTH];
 	Instruction instructionRegister;
-	
+
     sp = 0;
     bp = 1;
     pc = 0;
 
-	int calFlag = 0; 
-	int haltFlag = 0; // flag for if halt 
-	
+	int calFlag = 0;
+	int haltFlag = 0; // flag for if halt
+
     stack[1] = 0;
     stack[2] = 0;
     stack[3] = 0;
 
 	input = fopen(argv[1], "r");
 	output = fopen(argv[2], "w");
-	
+
 	if(input == NULL)
 	{
 		printf("File Not Found\n");
@@ -75,20 +75,20 @@ int main(int argc, const char* argv[])
 	}
 	// read in the input file and place into the array of instructions
 ReadInput(input, instructions, &lineCount);
-	
+
 
 	WriteInstructions(output, lineCount, instructions);
-	
+
 	fprintf(output, "STACK");
 	//pc = 0 pre initilized earlier
 	while(pc < lineCount)
-	{// go through all the instructions 
-		// first do a fetch for the new instruction 
+	{// go through all the instructions
+		// first do a fetch for the new instruction
 		//Fetch(instructions[pc], &instructionRegister);
-		//then increment the pc 
+		//then increment the pc
 		pc++;
 		//Execute(output, instructionRegister, &haltFlag);
-		
+
 		if(instructionRegister.op == 5)
 		{// if a CAL function
 			calFlag = 1;
@@ -102,22 +102,22 @@ ReadInput(input, instructions, &lineCount);
 		{
 			//PrintStack(output, calFlag, instructions);
 		}
-		
+
 		fprintf(output, "\n");
 		if(haltFlag == 1)
 		{
 			break;
 		}
-	
-	}// end of current instruction 
-	
-	
+
+	}// end of current instruction
+
+
 	// end of all instructions
-	
-	
-	
-	
-	//close files before exiting 
+
+
+
+
+	//close files before exiting
 	fclose(input);
 	fclose(output);
 
@@ -129,10 +129,10 @@ ReadInput(input, instructions, &lineCount);
 
 void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 {
-	int i = 0 ; 
+	int i = 0 ;
 	while(!feof(input))
 	{// read until end of file
-	
+
 		// read in each instruction to a new position in the array
 		fscanf(input, "%d %d %d", &instructions[i].op, &instructions[i].l , &instructions[i].m);
 		if(instructions[i].l >= MAX_LEXI_LEVELS)
@@ -144,134 +144,134 @@ void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 		{
 			printf("Max code length of %d reached.\n", MAX_CODE_LENGTH);
 		}
-		
-	
+
+
 	}
-	// set linecount to total number of instructions 
+	// set linecount to total number of instructions
 	*lineCount = i;
 
-	
+
 		printf("%d \n",i );
-	
-	
+
+
 }
 
 void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
 {
 	fprintf(output, "PL/0 code:\n\n");
 	int i;
-	
+
 	for(i = 0 ; i < lineCount; i++)
-	{// for each instruction print out 
-		// pc op and m 
+	{// for each instruction print out
+		// pc op and m
 		switch(instructions[i].op)
 		{
-			case 1: 
+			case 1:
 				fprintf(output, "\t%d\tLIT\t\t\t\t%d\n", i,  instructions[i].m);
         			break;
 			case 2:
 				switch(instructions[i].m)
-				{	
+				{
 					case0: //RET
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case1: //NEG
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case2: //ADD
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case3: //SUB
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case4: //MUL
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case5: //DIV
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case6: //ODD
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case7: //MOD
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case8: //EQL
-					{	
-	
+					{
+
 						break;
-					}  
+					}
 
 
 					case9: //NEQ
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case10: //LSS
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case11: //LEQ
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case12: //GTR
 					{
-	
+
 						break;
-					}  
+					}
 
 
 					case13: //GEQ
 					{
-	
+
 						break;
-					}  
+					}
 				}
-				
-				
-				
+
+
+
 				fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
                 		break;
 			case 3:
@@ -296,23 +296,24 @@ void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
                 		if(instructions[i].m ==2)
                 		{
                 		fprintf(output, "\t%d\tHLT\t\t\t\t\n", i, instructions[i].m);
-                		break;	
+                		break;
 						}
                 		fprintf(output, "\t%d\tSIO\t\t\t\t%d\n", i, instructions[i].m);
                 		break;
                 	default:
                 		fprintf(output, "Invalid Instruction.\n");
-      				break;	
-		
-	}
-	
+      				break;
+
+        }
+
+    }
 }
 
 
-/*pulls instruction from the current instruction and loads it into the instruction register*/ 
+/*pulls instruction from the current instruction and loads it into the instruction register*/
 void Fetch(Instruction ir, Instruction* instructionRegister)
-{// chose to pass by reference to keep the instructions having less changes throughout 
-//pull current instruction and load it into the instruction register 
+{// chose to pass by reference to keep the instructions having less changes throughout
+//pull current instruction and load it into the instruction register
 	instructionRegister->op = ir.op;
 	instructionRegister->l = ir.l;
 	instructionRegister->m = ir.m;
@@ -324,11 +325,11 @@ void Execute(FILE* output, Instruction  ir, int* haltFlag)
 {
     switch (ir.op)
     {
-        case 01: //LIT
+        case 1: //LIT
             sp = sp + 1;
             stack[sp] = ir.m;
             break;
-        case 02: //OPR
+        case 2: //OPR
             switch (ir.m)
             {
 
@@ -397,17 +398,17 @@ void Execute(FILE* output, Instruction  ir, int* haltFlag)
             }
             break;
 
-        case 03:  //LOD
+        case 3:  //LOD
             sp = sp + 1;
             stack[sp] = stack [ /*base(ir.l, bp)  +*/ ir.m];
             break;
 
-        case 04:  //STO
+        case 4:  //STO
             stack[ /*base(ir.l, bp) +*/ ir.m] = stack[sp];
             sp = sp - 1;
             break;
 
-        case 05: //CAL
+        case 5: //CAL
             stack[sp + 1] = 0;                //return value (FV)
             stack[sp + 2] = /*base(ir.l, bp)*/ 0;   //static link (SL)
             stack[sp + 3] = bp;               //dynamic link (DL)
@@ -416,13 +417,37 @@ void Execute(FILE* output, Instruction  ir, int* haltFlag)
             pc = ir.m;
             break;
 
-        case 06:  //INC
+        case 6:  //INC
             sp = sp + ir.m;
             break;
 
-        case 07:  //JMP
+        case 7:  //JMP
             pc = ir.m;
             break;
+
+        case 8:  //JPC
+            if(stack[sp] == 0)
+                pc = ir.m;
+            sp--;
+            break;
+
+        case 9:  //SIO
+            switch (ir.m)
+            {
+                case 0:  //OUT
+                    printf("%d\n", stack[sp]);
+                    sp--;
+                    break;
+
+                case 1:  //INP
+                    sp++;
+                    scanf("%d", &stack[sp]);
+                    break;
+
+                case 2:  //HLT
+                    return;
+                    break;
+            }
+            break;
     }
-}
 }
