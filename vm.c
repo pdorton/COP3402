@@ -77,17 +77,17 @@ int main(int argc, const char* argv[])
 ReadInput(input, instructions, &lineCount);
 	
 
-	//WriteInstructions(output, lineCount, instructions);
+	WriteInstructions(output, lineCount, instructions);
 	
 	fprintf(output, "STACK");
 	//pc = 0 pre initilized earlier
 	while(pc < lineCount)
 	{// go through all the instructions 
 		// first do a fetch for the new instruction 
-		Fetch(instructions[pc], &instructionRegister);
+		//Fetch(instructions[pc], &instructionRegister);
 		//then increment the pc 
 		pc++;
-		Execute(output, instructionRegister, &haltFlag);
+		//Execute(output, instructionRegister, &haltFlag);
 		
 		if(instructionRegister.op == 5)
 		{// if a CAL function
@@ -110,6 +110,8 @@ ReadInput(input, instructions, &lineCount);
 		}
 	
 	}// end of current instruction 
+	
+	
 	// end of all instructions
 	
 	
@@ -133,9 +135,6 @@ void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 	
 		// read in each instruction to a new position in the array
 		fscanf(input, "%d %d %d", &instructions[i].op, &instructions[i].l , &instructions[i].m);
-		
-		printf("op code is: %d L =  %d M =  %d \n", instructions[i].op, instructions[i].l, instructions[i].m);
-		
 		if(instructions[i].l >= MAX_LEXI_LEVELS)
 		{
 			printf("Invalid instruction: Level must be no more than 3.\n");
@@ -157,56 +156,157 @@ void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
 	
 }
 
-void Output(FILE* output, int lineCount, Instruction instructions[])
+void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
 {
-	int i = 0 ; 
+	fprintf(output, "PL/0 code:\n\n");
+	int i;
+	
 	for(i = 0 ; i < lineCount; i++)
-	{
-		if( i < 9 )
-		{
-			fprintf(output, " ");
-			
-		}
+	{// for each instruction print out 
+		// pc op and m 
 		switch(instructions[i].op)
 		{
 			case 1: 
-				fprintf(output, "%d    LIT   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+				fprintf(output, "\t%d\tLIT\t\t\t\t%d\n", i,  instructions[i].m);
         			break;
 			case 2:
-				fprintf(output, "%d    OPR   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+				switch(instructions[i].m)
+				{	
+					case0: //RET
+					{
+	
+						break;
+					}  
+
+
+					case1: //NEG
+					{
+	
+						break;
+					}  
+
+
+					case2: //ADD
+					{
+	
+						break;
+					}  
+
+
+					case3: //SUB
+					{
+	
+						break;
+					}  
+
+
+					case4: //MUL
+					{
+	
+						break;
+					}  
+
+
+					case5: //DIV
+					{
+	
+						break;
+					}  
+
+
+					case6: //ODD
+					{
+	
+						break;
+					}  
+
+
+					case7: //MOD
+					{
+	
+						break;
+					}  
+
+
+					case8: //EQL
+					{	
+	
+						break;
+					}  
+
+
+					case9: //NEQ
+					{
+	
+						break;
+					}  
+
+
+					case10: //LSS
+					{
+	
+						break;
+					}  
+
+
+					case11: //LEQ
+					{
+	
+						break;
+					}  
+
+
+					case12: //GTR
+					{
+	
+						break;
+					}  
+
+
+					case13: //GEQ
+					{
+	
+						break;
+					}  
+				}
+				
+				
+				
+				fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
                 		break;
 			case 3:
-				fprintf(output, "%d    LOD   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+				fprintf(output, "\t%d\tLOD\t\t\t\t%d\n", i,  instructions[i].m);
                 		break;
                 	case 4:
-                		fprintf(output, "%d    STO   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		fprintf(output, "\t%d\tSTO\t\t%d\t\t%d\n", i, instructions[i].l, instructions[i].m);
                 		break;
                 	case 5:
-                		fprintf(output, "%d    CAL   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		fprintf(output, "\t%d\tCAL\t\t%d\t\t%d\n", i, instructions[i].l, instructions[i].m);
                 		break;
                 	case 6:
-                		fprintf(output, "%d    INC   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		fprintf(output, "\t%d\tINC\t\t\t\t%d\n", i, instructions[i].m);
                 		break;
                 	case 7:
-                		fprintf(output, "%d    JMP   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		fprintf(output, "\t%d\tJMP\t\t\t\t%d\n", i, instructions[i].m);
                 		break;
                 	case 8:
-                		fprintf(output, "%d    JPC   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		fprintf(output, "\t%d\tJPC\t\t\t\t%d\n", i,  instructions[i].m);
                 		break;
                 	case 9:
-                		fprintf(output, "%d    SIO   %d    %d\n", pc, instructions[i].l, instructions[i].m);
+                		if(instructions[i].m ==2)
+                		{
+                		fprintf(output, "\t%d\tHLT\t\t\t\t\n", i, instructions[i].m);
+                		break;	
+						}
+                		fprintf(output, "\t%d\tSIO\t\t\t\t%d\n", i, instructions[i].m);
                 		break;
                 	default:
                 		fprintf(output, "Invalid Instruction.\n");
       				break;	
-		}
+		
 	}
 	
-	fprintf(output, "\n");
 }
-
-
-
 
 
 /*pulls instruction from the current instruction and loads it into the instruction register*/ 
@@ -325,4 +425,4 @@ void Execute(FILE* output, Instruction  ir, int* haltFlag)
             break;
     }
 }
-
+}
