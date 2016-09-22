@@ -1,626 +1,276 @@
 /*
-Team name: Group 30 aka Team Awesome
-Patrick Dorton
-Andrew Maida
-David Almeida
-Michael Garro
-
-COP3402-16Fall001
-MW 7:30pm-8:45pm
+ Team name: Group 30 aka Team Awesome
+ Patrick Dorton
+ Andrew Maida
+ Michael Garro
+ COP 3402-16Fall001
+ MW 7:30-8:45
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-
-typedef struct instruction
-{
-	int op; /* opcode*/
-	int l;	// L
-	int m; 	// M
-} Instruction;
-
-//Constants
-#define MAX_STACK_HEIGHT 2000
-#define MAX_CODE_LENGTH 500
 #define MAX_LEXI_LEVELS 3
+#define MAX_CODE_LENGTH 500
+#define MAX_STACK_HEIGHT 2000
 
-int stack[100];
-int sp;
-int pc;
-int bp;
-int lineCount = 0;
-Instruction instructionsCalled[MAX_CODE_LENGTH];
-int instructionsCalledIndex = 0;
-int pcHistory[100];
-int bpHistory[100];
-int spHistory[100];
-int pcIndex = 0;
-int bpIndex = 0;
-int spIndex = 0;
-int stackHistory[100][100];
-
-/*-------------------------User Defined Functions-----------------------------------*/
-
-void Fetch(Instruction ir, Instruction* instructionRegister);
-void Execute(FILE* output, Instruction ir, int* haltFlag);
-void ReadInput(FILE* input, Instruction* intructions, int* lineCount); // function ensured to function.
-
-/*-------------------------End of Function Prototypes-------------------------------*/
-
-/*-------------------------------Unwritten functions--------------------------------*/
-void WriteInstructions(FILE* output, int lineCount,Instruction* instructions); // not yet defined
-void PrintStack(FILE* output, int Flag ,Instruction* instructions); // not yet defined
-int base(int l, int bp);
-
-/*-------------------------End of unwritten functions-------------------------------*/
-
-int main(int argc, const char* argv[])
+struct Instruction
 {
-	FILE* input, *output;
+    int op;
+    int m;
+    int l;
+};
 
-	Instruction instructions[MAX_CODE_LENGTH];
-	Instruction instructionRegister;
+int base(int l, int base, int stack[]);
 
-    sp = 0;
-    bp = 1;
-    pc = 0;
-
-	int calFlag = 0;
-	int haltFlag = 0; // flag for if halt
-
-    //initialize stack
-    stack[1] = 0;
-    stack[2] = 0;
-    stack[3] = 0;
-
-    //initialize stack history array
-    //we use the first entry of each row as the index counter
-    int i;
-    for(i = 0; i < 100; i++)
-        stackHistory[i][0] = 0;
-
-	input = fopen(argv[1], "r");
-	output = fopen(argv[2], "w");
-
-	if(input == NULL)
-	{
-		printf("File Not Found\n");
-		return -1;//return neg one will let programmer know that it returned from file not found
-	}
-	// read in the input file and place into the array of instructions
-    ReadInput(input, instructions, &lineCount);
+int pc = 0;
+int flag = 0;
+int bp = 1;
+int sp = 0;
+int stack[MAX_STACK_HEIGHT];
 
 
-	WriteInstructions(output, lineCount, instructions);
-
-	//pc = 0 pre initilized earlier
-	while(pc < lineCount)
-	{// go through all the instructions
-		// first do a fetch for the new instruction
-		Fetch(instructions[pc], &instructionRegister);
-		//then increment the pc
-		pc++;
-		Execute(output, instructionRegister, &haltFlag);
-
-		if(instructionRegister.op == 5)
-		{// if a CAL function
-			calFlag = 1;
-			//PrintStack(output, 0 , instructions);
-		}
-		else if(instructionRegister.op == 4 && instructionRegister.l > 0)
-		{
-			calFlag = 0;
-		}
-		else
-		{
-			//PrintStack(output, calFlag, instructions);
-		}
-
-		fprintf(output, "\n");
-		if(haltFlag == 1)
-		{
-			break;
-		}
-
-	}// end of current instruction
-
-
-	// end of all instructions
-
-
-
-
-	//close files before exiting
-	fclose(input);
-	fclose(output);
-
-	return 0;
-}
-
-void ReadInput(FILE* input, Instruction* instructions, int* lineCount)
+int main()
 {
-	int i = 0 ;
-	while(!feof(input))
-	{// read until end of file
+    int input1, input2, input3, input4;
 
-		// read in each instruction to a new position in the array
-		fscanf(input, "%d %d %d", &instructions[i].op, &instructions[i].l , &instructions[i].m);
-		if(instructions[i].l >= MAX_LEXI_LEVELS)
-		{
-			printf("Invalid instruction: Level must be no more than 3.\n");
-		}
-		i++;
-		if(i == MAX_CODE_LENGTH)
-		{
-			printf("Max code length of %d reached.\n", MAX_CODE_LENGTH);
-		}
+    int counter = 0;
+    int instructionCount;
+    char *OPCODES[] = {"LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP", "JPC", "SIO", "SIO", "SIO"};
+    struct Instruction instructionSet[MAX_CODE_LENGTH];
 
+    int activationRecords[500];
+    int activationRecordsIndex = 0;
 
-	}
-	// set linecount to total number of instructions
-	*lineCount = i;
+    int spLessThanAR = 0;
+    int lastInstruction = 0;
 
+    FILE *ifp = fopen("input.txt", "r");
+    FILE *ofp = fopen("output.txt", "w");
 
-		printf("%d \n",i );
+    fprintf(ofp, "PL/0 Code:\n");
 
+    while(fscanf(ifp, "%d %d %d", &input1, &input2, &input3) != EOF)
+    {
+        instructionSet[counter].op = input1;
+        fprintf(ofp, "%d\t%s\t", counter, OPCODES[input1 - 1]);
 
-}
+        instructionSet[counter].l = input2;
+        fprintf(ofp, "%d\t", input2);
 
-void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
-{
-	fprintf(output, "PL/0 code:\n\n");
-	int i;
+        instructionSet[counter].m = input3;
+        fprintf(ofp, "%d\n", input3);
 
-	for(i = 0 ; i < lineCount; i++)
-	{// for each instruction print out
-		// pc op and m
-		switch(instructions[i].op)
-		{
-			case 1:
-				fprintf(output, "\t%d\tLIT\t\t\t\t%d\n", i,  instructions[i].m);
-                break;
-			case 2:
-				switch(instructions[i].m)
-				{
-					case 0: //RET
-					{
-						fprintf(output, "\t%d\tRET\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
+        counter++;
+    }
 
+    instructionCount = counter - 1;
+    counter = 0;
 
-					case 1: //NEG
-					{
-						fprintf(output, "\t%d\tNEG\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
+    while (1)
+    {
+        int userInput;
+        int l = instructionSet[pc].l;
+        int m = instructionSet[pc].m;
+        int op = instructionSet[pc].op - 1;
 
+        fprintf(ofp, "%d\t%s\t%d\t%d\t", pc, OPCODES[op], l, m);
 
-					case 2: //ADD
-					{
-						fprintf(output, "\t%d\tADD\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 3: //SUB
-					{
-						fprintf(output, "\t%d\tSUB\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 4: //MUL
-					{
-						fprintf(output, "\t%d\tMUL\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 5: //DIV
-					{
-						fprintf(output, "\t%d\tDIV\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 6: //ODD
-					{
-						fprintf(output, "\t%d\tODD\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 7: //MOD
-					{
-						fprintf(output, "\t%d\tMOD\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 8: //EQL
-					{
-						fprintf(output, "\t%d\tEQL\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 9: //NEQ
-					{
-						fprintf(output, "\t%d\tNEQ\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 10: //LSS
-					{
-						fprintf(output, "\t%d\tLSS\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 11: //LEQ
-					{
-						fprintf(output, "\t%d\tLEQ\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 12: //GTR
-					{
-						fprintf(output, "\t%d\tGTR\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-
-					case 13: //GEQ
-					{
-						fprintf(output, "\t%d\tGEQ\t\t\t\t%d\n", i,  instructions[i].m);
-						break;
-					}
-
-				}
-				break;
-
-
-			//	fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
-                		//break;
-			case 3:
-				fprintf(output, "\t%d\tLOD\t\t\t\t%d\n", i,  instructions[i].m);
-                		break;
-                	case 4:
-                		fprintf(output, "\t%d\tSTO\t\t%d\t\t%d\n", i, instructions[i].l, instructions[i].m);
-                		break;
-                	case 5:
-                		fprintf(output, "\t%d\tCAL\t\t%d\t\t%d\n", i, instructions[i].l, instructions[i].m);
-                		break;
-                	case 6:
-                		fprintf(output, "\t%d\tINC\t\t\t\t%d\n", i, instructions[i].m);
-                		break;
-                	case 7:
-                		fprintf(output, "\t%d\tJMP\t\t\t\t%d\n", i, instructions[i].m);
-                		break;
-                	case 8:
-                		fprintf(output, "\t%d\tJPC\t\t\t\t%d\n", i,  instructions[i].m);
-                		break;
-                	case 9:
-                		if(instructions[i].m ==2)
-                		{
-                		fprintf(output, "\t%d\tHLT\t\t\t\t\n", i, instructions[i].m);
-                		break;
-						}
-                		fprintf(output, "\t%d\tSIO\t\t\t\t%d\n", i, instructions[i].m);
-                		break;
-                	default:
-                		fprintf(output, "Invalid Instruction.\n");
-      				break;
-
+        if (pc == instructionCount)
+        {
+            lastInstruction = 1;
         }
 
-    }
-}
+        pc++;
 
+        switch(op)
+        {
+            case 0:  //LIT
+                sp++;
+                stack[sp] = m;
+                break;
 
-/*pulls instruction from the current instruction and loads it into the instruction register*/
-void Fetch(Instruction ir, Instruction* instructionRegister)
-{// chose to pass by reference to keep the instructions having less changes throughout
-//pull current instruction and load it into the instruction register
-	instructionRegister->op = ir.op;
-	instructionRegister->l = ir.l;
-	instructionRegister->m = ir.m;
-}
+            case 1:  //OPR
+                switch (m)
+                {
+                    case 0:
+                        sp = bp - 1;
+                        pc = stack[sp + 4];
+                        bp = stack[sp + 3];
+                        int k = 0;
+                        while(1)
+                        {
+                            if (activationRecords[k] == sp)
+                            {
+                                activationRecords[k] = 0;
+                                break;
+                            }
+                            k++;
+                        }
+                        break;
 
+                    case 1:
+                        stack[sp] = -stack[sp];
+                        break;
 
+                    case 2:
+                        sp--;
+                        stack[sp] = stack[sp] + stack[sp + 1];
+                        break;
 
-void Execute(FILE* output, Instruction  ir, int* haltFlag)
-{
-    switch (ir.op)
-    {
-        case 1: //LIT
-            sp = sp + 1;
-            stack[sp] = ir.m;
-            break;
-        case 2: //OPR
-            switch (ir.m)
-            {
+                    case 3:
+                        sp--;
+                        stack[sp] = stack[sp] - stack[sp + 1];
+                        break;
 
-                case 1: //NEG
-                    stack[sp] = -stack[sp];
+                    case 4:
+                        sp--;
+                        stack[sp] = stack[sp] * stack[sp + 1];
+                        break;
+
+                    case 5:
+                        sp--;
+                        stack[sp] = stack[sp] / stack[sp + 1];
+                        break;
+
+                    case 6:
+                        stack[sp] = stack[sp] % 2;
+                        break;
+
+                    case 7:
+                        sp--;
+                        stack[sp] = stack[sp] % stack[sp + 1];
+                        break;
+
+                    case 8:
+                        sp--;
+                        stack[sp] = stack[sp] == stack[sp + 1];
+                        break;
+
+                    case 9:
+                        sp--;
+                        stack[sp] = stack[sp] != stack[sp + 1];
+                        break;
+
+                    case 10:
+                        sp--;
+                        stack[sp] = stack[sp] < stack[sp + 1];
+                        break;
+
+                    case 11:
+                        sp--;
+                        stack[sp] = stack[sp] <= stack[sp + 1];
+                        break;
+
+                    case 12:
+                        sp--;
+                        stack[sp] = stack[sp] > stack[sp + 1];
+                        break;
+
+                    case 13:
+                        sp--;
+                        stack[sp] = stack[sp] >= stack[sp + 1];
+                        break;
+                    break;
+                }
+
+                case 2: // "LOD"
+                    sp++;
+                    stack[sp] = stack[base(l, bp, stack) + m];
                     break;
 
-                case 2: //ADD
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] + stack[sp + 1];
-                    break;
 
-                case 3: //SUB
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] - stack[sp + 1];
-                    break;
-
-                case 4: //MUL
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] * stack[sp + 1];
-                    break;
-
-                case 5: //DIV
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] / stack[sp + 1];
-                    break;
-
-                case 6: //ODD
-                    stack[sp] = stack[sp] % 2;
-                    break;
-
-                case 7: //MOD
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] % stack[sp + 1];
-                    break;
-
-                case 8: //EQL
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] == stack[sp + 1];
-                    break;
-
-                case 9: //NEQ
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] != stack[sp + 1];
-                    break;
-
-                case 10: //LSS
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] <  stack[sp + 1];
-                    break;
-
-                case 11: //LEQ
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] <= stack[sp + 1];
-                    break;
-
-                case 12: //GTR
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] >  stack[sp + 1];
-                    break;
-
-                case 13: //GEQ
-                    sp = sp - 1;
-                    stack[sp] = stack[sp] >= stack[sp + 1];
-                    break;
-            }
-            break;
-
-        case 3:  //LOD
-            sp = sp + 1;
-            stack[sp] = stack [ /*base(ir.l, bp)  +*/ ir.m];
-            break;
-
-        case 4:  //STO
-            stack[ /*base(ir.l, bp) +*/ ir.m] = stack[sp];
-            sp = sp - 1;
-            break;
-
-        case 5: //CAL
-            stack[sp + 1] = 0;                //return value (FV)
-            stack[sp + 2] = /*base(ir.l, bp)*/ 0;   //static link (SL)
-            stack[sp + 3] = bp;               //dynamic link (DL)
-            stack[sp + 4] = pc;               //return address (RA)
-            bp = sp + 1;
-            pc = ir.m;
-            break;
-
-        case 6:  //INC
-            sp = sp + ir.m;
-            break;
-
-        case 7:  //JMP
-            pc = ir.m;
-            break;
-
-        case 8:  //JPC
-            if(stack[sp] == 0)
-                pc = ir.m;
-            sp--;
-            break;
-
-        case 9:  //SIO
-            switch (ir.m)
-            {
-                case 0:  //OUT
-                    printf("%d\n", stack[sp]);
+                case 3: // "STO"
+                    stack[base(l, bp, stack) + m] = stack[sp];
                     sp--;
                     break;
 
-                case 1:  //INP
+
+                case 4: // "CAL"
+                    stack[sp + 1] = 0;
+                    stack[sp + 2] = base(l, bp, stack);
+                    stack[sp + 3] = bp;
+                    stack[sp + 4] = pc;
+                    bp = sp + 1;
+                    pc = m;
+                    break;
+
+
+                case 5: // "INC"
+                    if(sp > 0)
+                    {
+                        activationRecords[activationRecordsIndex] = sp; // so the '|' can be outputted correctly
+                        activationRecordsIndex++;
+                    }
+                    sp = sp + m;
+                    break;
+
+
+                case 6: // "JMP"
+                    pc = m;
+                    break;
+
+
+                case 7: // "JPC"
+                    if(stack[sp] == 0)
+                        pc = m;
+                    sp--;
+                    break;
+
+
+                case 8: // "SIO" for m == 1
+                    printf("SIO: %d\n", stack[sp]);
+                    sp--;
+                    break;
+
+
+                case 9: // "SIO" for m == 2
                     sp++;
-                    scanf("%d", &stack[sp]);
+                    printf("\nNumber to input: ");
+                    scanf("%d", &userInput);
+                    stack[sp] = userInput;
                     break;
 
-                case 2:  //HLT
-                    return;
+
+                case 10:
+                    fprintf(ofp, "\nSuccessfully halted.\n");
+                    flag = 1;
                     break;
+        }
+
+        if(flag == 0)
+        {
+            fprintf(ofp, "%d\t%d\t%d\t", pc, bp, sp);
+            int i;
+            int c = 0;
+            for(i = 1; i <= sp; i++)
+            {
+                if(i == activationRecords[c] + 1 && sp > activationRecords[c] + 1 && c != 0)
+                {
+                    fprintf(ofp, "| ");
+                    c++;
+                }
+                fprintf(ofp, "%d ", stack[i]);
             }
-            break;
-    }
+            fprintf(ofp, "\n");
+        }
 
-    instructionsCalled[instructionsCalledIndex] = ir;
-    instructionsCalledIndex++;
-    bpHistory[bpIndex] = bp;
-    spHistory[spIndex] = sp;
-    pcHistory[pcIndex] = pc;
-    bpIndex++;
-    spIndex++;
-    pcIndex++;
+        if(lastInstruction == 1)
+        {
+            break;
+        }
+    }
+    return 0;
 }
 
-void PrintStack(FILE* output, int Flag ,Instruction* instructions)
+
+int base(int l, int base, int stack[])
 {
-
-        // for each instruction print out
-		// pc op and m
-		switch(instructionsCalled[i].op)
-		{
-			case 1:
-				fprintf(output, "\t%d\tLIT\t\t\t\t%d", i,  instructionsCalled[i].m);
-                break;
-			case 2:
-				switch(instructionsCalled[i].m)
-				{
-					case 0: //RET
-					{
-						fprintf(output, "\t%d\tRET\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 1: //NEG
-					{
-						fprintf(output, "\t%d\tNEG\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 2: //ADD
-					{
-						fprintf(output, "\t%d\tADD\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 3: //SUB
-					{
-						fprintf(output, "\t%d\tSUB\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 4: //MUL
-					{
-						fprintf(output, "\t%d\tMUL\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 5: //DIV
-					{
-						fprintf(output, "\t%d\tDIV\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 6: //ODD
-					{
-						fprintf(output, "\t%d\tODD\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 7: //MOD
-					{
-						fprintf(output, "\t%d\tMOD\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 8: //EQL
-					{
-						fprintf(output, "\t%d\tEQL\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 9: //NEQ
-					{
-						fprintf(output, "\t%d\tNEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 10: //LSS
-					{
-						fprintf(output, "\t%d\tLSS\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 11: //LEQ
-					{
-						fprintf(output, "\t%d\tLEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 12: //GTR
-					{
-						fprintf(output, "\t%d\tGTR\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-
-					case 13: //GEQ
-					{
-						fprintf(output, "\t%d\tGEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
-						break;
-					}
-
-				}
-				break;
-
-
-			//	fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
-                		//break;
-			case 3:
-				fprintf(output, "\t%d\tLOD\t\t\t\t%d", i,  instructionsCalled[i].m);
-                		break;
-                	case 4:
-                		fprintf(output, "\t%d\tSTO\t\t%d\t\t%d", i, instructionsCalled[i].l, instructionsCalled[i].m);
-                		break;
-                	case 5:
-                		fprintf(output, "\t%d\tCAL\t\t%d\t\t%d", i, instructionsCalled[i].l, instructionsCalled[i].m);
-                		break;
-                	case 6:
-                		fprintf(output, "\t%d\tINC\t\t\t\t%d", i, instructionsCalled[i].m);
-                		break;
-                	case 7:
-                		fprintf(output, "\t%d\tJMP\t\t\t\t%d", i, instructionsCalled[i].m);
-                		break;
-                	case 8:
-                		fprintf(output, "\t%d\tJPC\t\t\t\t%d", i,  instructionsCalled[i].m);
-                		break;
-                	case 9:
-                		if(instructionsCalled[i].m ==2)
-                		{
-                		fprintf(output, "\t%d\tHLT\t\t\t\t", i, instructionsCalled[i].m);
-                		break;
-						}
-                		fprintf(output, "\t%d\tSIO\t\t\t\t%d", i, instructionsCalled[i].m);
-                		break;
-                	default:
-                		fprintf(output, "Invalid Instruction.");
-      				break;
-
-        }
-        fprintf(output, "\t%d\t%d\t%d", pcHistory[i], bpHistory[i], spHistory[i]);
-
+    int b = base;
+    while(l > 0)
+    {
+        b = stack[b + 1];
+        l--;
+    }
+    return b;
 }
