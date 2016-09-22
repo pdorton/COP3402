@@ -31,6 +31,15 @@ int sp;
 int pc;
 int bp;
 int lineCount = 0;
+Instruction instructionsCalled[MAX_CODE_LENGTH];
+int instructionsCalledIndex = 0;
+int pcHistory[100];
+int bpHistory[100];
+int spHistory[100];
+int pcIndex = 0;
+int bpIndex = 0;
+int spIndex = 0;
+int stackHistory[100][100];
 
 /*-------------------------User Defined Functions-----------------------------------*/
 
@@ -61,9 +70,16 @@ int main(int argc, const char* argv[])
 	int calFlag = 0;
 	int haltFlag = 0; // flag for if halt
 
+    //initialize stack
     stack[1] = 0;
     stack[2] = 0;
     stack[3] = 0;
+
+    //initialize stack history array
+    //we use the first entry of each row as the index counter
+    int i;
+    for(i = 0; i < 100; i++)
+        stackHistory[i][0] = 0;
 
 	input = fopen(argv[1], "r");
 	output = fopen(argv[2], "w");
@@ -74,7 +90,7 @@ int main(int argc, const char* argv[])
 		return -1;//return neg one will let programmer know that it returned from file not found
 	}
 	// read in the input file and place into the array of instructions
-ReadInput(input, instructions, &lineCount);
+    ReadInput(input, instructions, &lineCount);
 
 
 	WriteInstructions(output, lineCount, instructions);
@@ -83,10 +99,10 @@ ReadInput(input, instructions, &lineCount);
 	while(pc < lineCount)
 	{// go through all the instructions
 		// first do a fetch for the new instruction
-		//Fetch(instructions[pc], &instructionRegister);
+		Fetch(instructions[pc], &instructionRegister);
 		//then increment the pc
 		pc++;
-		//Execute(output, instructionRegister, &haltFlag);
+		Execute(output, instructionRegister, &haltFlag);
 
 		if(instructionRegister.op == 5)
 		{// if a CAL function
@@ -119,9 +135,6 @@ ReadInput(input, instructions, &lineCount);
 	//close files before exiting
 	fclose(input);
 	fclose(output);
-
-
-
 
 	return 0;
 }
@@ -167,7 +180,7 @@ void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
 		{
 			case 1:
 				fprintf(output, "\t%d\tLIT\t\t\t\t%d\n", i,  instructions[i].m);
-        			break;
+                break;
 			case 2:
 				switch(instructions[i].m)
 				{
@@ -267,7 +280,7 @@ void WriteInstructions(FILE* output, int lineCount,Instruction* instructions)
 						fprintf(output, "\t%d\tGEQ\t\t\t\t%d\n", i,  instructions[i].m);
 						break;
 					}
-					
+
 				}
 				break;
 
@@ -450,4 +463,164 @@ void Execute(FILE* output, Instruction  ir, int* haltFlag)
             }
             break;
     }
+
+    instructionsCalled[instructionsCalledIndex] = ir;
+    instructionsCalledIndex++;
+    bpHistory[bpIndex] = bp;
+    spHistory[spIndex] = sp;
+    pcHistory[pcIndex] = pc;
+    bpIndex++;
+    spIndex++;
+    pcIndex++;
+}
+
+void PrintStack(FILE* output, int Flag ,Instruction* instructions)
+{
+
+        // for each instruction print out
+		// pc op and m
+		switch(instructionsCalled[i].op)
+		{
+			case 1:
+				fprintf(output, "\t%d\tLIT\t\t\t\t%d", i,  instructionsCalled[i].m);
+                break;
+			case 2:
+				switch(instructionsCalled[i].m)
+				{
+					case 0: //RET
+					{
+						fprintf(output, "\t%d\tRET\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 1: //NEG
+					{
+						fprintf(output, "\t%d\tNEG\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 2: //ADD
+					{
+						fprintf(output, "\t%d\tADD\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 3: //SUB
+					{
+						fprintf(output, "\t%d\tSUB\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 4: //MUL
+					{
+						fprintf(output, "\t%d\tMUL\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 5: //DIV
+					{
+						fprintf(output, "\t%d\tDIV\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 6: //ODD
+					{
+						fprintf(output, "\t%d\tODD\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 7: //MOD
+					{
+						fprintf(output, "\t%d\tMOD\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 8: //EQL
+					{
+						fprintf(output, "\t%d\tEQL\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 9: //NEQ
+					{
+						fprintf(output, "\t%d\tNEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 10: //LSS
+					{
+						fprintf(output, "\t%d\tLSS\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 11: //LEQ
+					{
+						fprintf(output, "\t%d\tLEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 12: //GTR
+					{
+						fprintf(output, "\t%d\tGTR\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+
+					case 13: //GEQ
+					{
+						fprintf(output, "\t%d\tGEQ\t\t\t\t%d", i,  instructionsCalled[i].m);
+						break;
+					}
+
+				}
+				break;
+
+
+			//	fprintf(output, "\t%d\tOPR\t\t\t\t%d\n", i,  instructions[i].m);
+                		//break;
+			case 3:
+				fprintf(output, "\t%d\tLOD\t\t\t\t%d", i,  instructionsCalled[i].m);
+                		break;
+                	case 4:
+                		fprintf(output, "\t%d\tSTO\t\t%d\t\t%d", i, instructionsCalled[i].l, instructionsCalled[i].m);
+                		break;
+                	case 5:
+                		fprintf(output, "\t%d\tCAL\t\t%d\t\t%d", i, instructionsCalled[i].l, instructionsCalled[i].m);
+                		break;
+                	case 6:
+                		fprintf(output, "\t%d\tINC\t\t\t\t%d", i, instructionsCalled[i].m);
+                		break;
+                	case 7:
+                		fprintf(output, "\t%d\tJMP\t\t\t\t%d", i, instructionsCalled[i].m);
+                		break;
+                	case 8:
+                		fprintf(output, "\t%d\tJPC\t\t\t\t%d", i,  instructionsCalled[i].m);
+                		break;
+                	case 9:
+                		if(instructionsCalled[i].m ==2)
+                		{
+                		fprintf(output, "\t%d\tHLT\t\t\t\t", i, instructionsCalled[i].m);
+                		break;
+						}
+                		fprintf(output, "\t%d\tSIO\t\t\t\t%d", i, instructionsCalled[i].m);
+                		break;
+                	default:
+                		fprintf(output, "Invalid Instruction.");
+      				break;
+
+        }
+        fprintf(output, "\t%d\t%d\t%d", pcHistory[i], bpHistory[i], spHistory[i]);
+
 }
