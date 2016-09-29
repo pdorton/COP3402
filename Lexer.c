@@ -12,10 +12,3 @@ Andrew Maida
 
 #define MAX_ID_LENGTH 12
 #define MAX_INTEGER 65535
-
-const char* const RESERVED_WORDS[] = {"const", "var", "procedure", 0};
-
-int main()
-{
-
-}
