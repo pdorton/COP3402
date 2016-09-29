@@ -21,7 +21,7 @@ struct Instruction
     int l;
 };
 
-int base(int l, int base, int stack[]);
+int base(int l, int base);
 
 int pc = 0;
 int flag = 0;
@@ -34,9 +34,15 @@ int main()
 {
     int input1, input2, input3, input4;
 
+    stack[0] = 0;
+    stack[1] = 0;
+    stack[2] = 0;
+
     int counter = 0;
     int instructionCount;
     char *OPCODES[] = {"LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP", "JPC", "SIO", "SIO", "SIO"};
+    char *OPRcodes[] = {"RET", "NEG", "ADD", "SUB", "MUL", "DIV", "ODD", "MOD", "EQL", "NEQ", "LSS", "LEQ", "GTR", "GEQ"};
+    char *SIOCODES[] = {"OUT", "INP", "HLT"};
     struct Instruction instructionSet[MAX_CODE_LENGTH];
 
     int activationRecords[500];
@@ -53,7 +59,16 @@ int main()
     while(fscanf(ifp, "%d %d %d", &input1, &input2, &input3) != EOF)
     {
         instructionSet[counter].op = input1;
-        fprintf(ofp, "%d\t%s\t", counter, OPCODES[input1 - 1]);
+        if (input1 == 2)
+        {
+            fprintf(ofp, "%d\t%s\t", counter, OPRcodes[input3]);
+        }
+        else if (input1 == 9)
+        {
+            fprintf(ofp, "%d\t%s\t", counter, SIOCODES[input3]);
+        }
+        else
+            fprintf(ofp, "%d\t%s\t", counter, OPCODES[input1 - 1]);
 
         instructionSet[counter].l = input2;
         fprintf(ofp, "%d\t", input2);
@@ -66,8 +81,9 @@ int main()
 
     instructionCount = counter - 1;
     counter = 0;
+    int instructionsRead = 0;
 
-    while (1)
+    while (instructionsRead <= instructionCount)
     {
         int userInput;
         int l = instructionSet[pc].l;
@@ -85,19 +101,19 @@ int main()
 
         switch(op)
         {
-            case 0:  //LIT
+            case 1:  //LIT
                 sp++;
                 stack[sp] = m;
                 break;
 
-            case 1:  //OPR
+            case 2:  //OPR
                 switch (m)
                 {
                     case 0:
                         sp = bp - 1;
                         pc = stack[sp + 4];
                         bp = stack[sp + 3];
-                        int k = 0;
+                        /*int k = 0;
                         while(1)
                         {
                             if (activationRecords[k] == sp)
@@ -106,7 +122,7 @@ int main()
                                 break;
                             }
                             k++;
-                        }
+                        }*/
                         break;
 
                     case 1:
@@ -171,24 +187,24 @@ int main()
                         sp--;
                         stack[sp] = stack[sp] >= stack[sp + 1];
                         break;
-                    break;
                 }
+                break;
 
-                case 2: // "LOD"
+                case 3: // "LOD"
                     sp++;
-                    stack[sp] = stack[base(l, bp, stack) + m];
+                    stack[sp] = stack[base(l, bp) + m];
                     break;
 
 
-                case 3: // "STO"
-                    stack[base(l, bp, stack) + m] = stack[sp];
+                case 4: // "STO"
+                    stack[base(l, bp) + m] = stack[sp];
                     sp--;
                     break;
 
 
-                case 4: // "CAL"
+                case 5: // "CAL"
                     stack[sp + 1] = 0;
-                    stack[sp + 2] = base(l, bp, stack);
+                    stack[sp + 2] = base(l, bp);
                     stack[sp + 3] = bp;
                     stack[sp + 4] = pc;
                     bp = sp + 1;
@@ -196,46 +212,48 @@ int main()
                     break;
 
 
-                case 5: // "INC"
-                    if(sp > 0)
+                case 6: // "INC"
+                    /*if(sp > 0)
                     {
                         activationRecords[activationRecordsIndex] = sp; // so the '|' can be outputted correctly
                         activationRecordsIndex++;
-                    }
+                    }*/
                     sp = sp + m;
                     break;
 
 
-                case 6: // "JMP"
+                case 7: // "JMP"
                     pc = m;
                     break;
 
 
-                case 7: // "JPC"
+                case 8: // "JPC"
                     if(stack[sp] == 0)
                         pc = m;
                     sp--;
                     break;
 
 
-                case 8: // "SIO" for m == 1
-                    printf("SIO: %d\n", stack[sp]);
-                    sp--;
-                    break;
+                case 9: // "SIO"
+                    switch (m)
+                    {
+                        case 1:  //OUT
+                            printf("OUT: %d\n", stack[sp]);
+                            sp--;
+                            break;
 
+                        case 2: //INP
+                            sp++;
+                            printf("\nNumber to input: ");
+                            scanf("%d", &userInput);
+                            stack[sp] = userInput;
+                            break;
 
-                case 9: // "SIO" for m == 2
-                    sp++;
-                    printf("\nNumber to input: ");
-                    scanf("%d", &userInput);
-                    stack[sp] = userInput;
-                    break;
-
-
-                case 10:
-                    fprintf(ofp, "\nSuccessfully halted.\n");
-                    flag = 1;
-                    break;
+                        case 3:  //HLT
+                            fprintf(ofp, "\nSuccessfully halted.\n");
+                            flag = 1;
+                            return 0;
+                    }
         }
 
         if(flag == 0)
@@ -259,17 +277,19 @@ int main()
         {
             break;
         }
+
+        instructionsRead++;
     }
     return 0;
 }
 
 
-int base(int l, int base, int stack[])
+int base(int l, int base)
 {
     int b = base;
     while(l > 0)
     {
-        b = stack[b + 1];
+        b = stack[b];
         l--;
     }
     return b;
