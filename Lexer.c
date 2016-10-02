@@ -7,19 +7,19 @@ Andrew Maida
 */
 
 typedef enum token {
-  nulsym = 1, identsym, numbersym, plussym, minussym,
-  multsym, slashsym, oddsym, eqsym, neqsym, lessym, leqsym,
-  gtrsym, geqsym, lparentsym, rparentsym, commasym, semicolonsym,
-  periodsym, becomessym, beginsym, endsym, ifsym, thensym,
-  whilesym, dosym, callsym, constsym, varsym, procsym, writesym,
-  readsym , elsesym
+  nulsym = 1, identsym = 2, numbersym = 3, plussym = 4, minussym = 5,
+  multsym = 6, slashsym = 7, oddsym = 8, eqsym = 9, neqsym = 10, lessym = 11, leqsym = 12,
+  gtrsym = 13, geqsym = 14, lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
+  periodsym = 19, becomessym = 20, beginsym = 21, endsym = 22, ifsym = 23, thensym = 24,
+  whilesym = 25, dosym = 26, callsym = 27, constsym = 28, varsym = 29, procsym = 30, writesym = 31,
+  readsym =  32, elsesym = 33
 } TokenType;
 
 typedef struct myToken
 {
     TokenType type;
     char string[14];
-}Token
+}Token;
 
 
 
@@ -50,10 +50,33 @@ int main(int argc, char *argv[])
     FILE * ifp = fopen("input.txt", "r");
 
     ImportSourceCode(ifp);
+
+    if(ifp == NULL)
+    {
+        printf("Could not open file");
+    }
+    else
+    {
+         ImportSourceCode(ifp);
+    }
+
     return 0;
 }
 
-
+void ParseSourceCode()
+{
+    int i;
+    int j;
+    int tokenLength;
+    for (i = 0; i < numTokens; i++)
+    {
+        tokenLength = strlen(tokenCollection[i]);
+        for (j = 0; j < tokenLength; j++)
+        {
+            //switch ()
+        }
+    }
+}
 
 void ImportSourceCode(FILE * ifp)
 {
