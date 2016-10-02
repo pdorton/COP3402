@@ -25,11 +25,8 @@ typedef struct myToken
 
 #include <stdio.h>
 #include <string.h>
-<<<<<<< HEAD
 #include <ctype.h>
-=======
 #include <stdlib.h>
->>>>>>> refs/remotes/origin/master
 //#include "tokens.h"
 
 //PROTOTYPES
@@ -40,7 +37,7 @@ void PrintOutInputFile(FILE * ifpFGETS);
 void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
 
 
-#define MAX_ID_LENGTH 12
+#define MAX_ID_LENGTH 13
 #define MAX_INTEGER 65535
 
 char* RESERVED_WORDS[14];
@@ -79,9 +76,9 @@ int main(int argc, char *argv[])
         PrintOutInputFile(ifpFGETS);
     }
 
-<<<<<<< HEAD
+
     //ImportSourceCode(ifp);
-=======
+
     if(showClean)
     {
         printf("\n\nsource code without comments:\n-----------------------------\n");
@@ -89,7 +86,6 @@ int main(int argc, char *argv[])
     }
 
     printf("\n\ntokens:\n-------\n");
->>>>>>> refs/remotes/origin/master
 
     if(ifp == NULL)
     {
@@ -104,30 +100,63 @@ int main(int argc, char *argv[])
     char tokenInput[100];
     while(fscanf(ifp, "%s", tokenInput) != EOF)
     {
-        if (strlen(tokenInput) < MAX_ID_LENGTH)
+        if (strlen(tokenInput) < MAX_ID_LENGTH) //If the length of the token is within the limit of 12 chars plus one symbol at the end
         {
             //tokenCollection[numTokens] = tokenInput;
             //numTokens++;
-            if (isalpha(tokenInput[strlen(tokenInput) - 1] != 0))
+            if (isalpha(tokenInput[strlen(tokenInput) - 1] != 0))  //If the last char is a letter
             {
-                if (isdigit(tokenInput[0]) != 0)
+                if (isdigit(tokenInput[0]) != 0)  //If the first char is a number
                 {
                     printf("Invalid start of identifier %s", tokenInput);
                     return 0;
                 }
-                else if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0)
+                else if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0) //If the first char is a special symbol
                 {
                     printf("Invalid start of identifier %s", tokenInput);
                     return 0;
                 }
-                else
+                else  //Otherwise, we need to search the rest of the token
                 {
                     int i;
                     for (i = 1; i < strlen(tokenInput) - 1; i++)
                     {
-                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0)
+                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0) //If any of the chars are special chars
                         {
                             printf("Invalid identifier %s", tokenInput);
+                            return 0;
+                        }
+                    }
+                }
+            }
+            else if (isdigit(tokenInput[strlen(tokenInput) - 1] != 0) )  //If the last char is a number
+            {
+                if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0) //If the first char is a special symbol
+                {
+                    printf("Invalid identifier: Operator as start character");
+                    return 0;
+                }
+                else if (strlen(tokenInput) > 6 && isdigit(tokenInput[0]) != 0)  //If the first char is a number and length is bigger than 6
+                {
+                    printf("Integer digit Overflow");
+                    return 0;
+                }
+                else if (strlen(tokenInput) == 6 && isdigit(tokenInput[0]) != 0) //If the first char is a number and the length is equal to 6
+                {
+                    if (atoi(tokenInput) > MAX_INTEGER)  //Check the numerical value
+                    {
+                        printf("Integer Overflow");
+                        return 0;
+                    }
+                }
+                else  //Otherwise, run through the rest of the token
+                {
+                    int i;
+                    for (i = 1; i < strlen(tokenInput) - 1; i++)
+                    {
+                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0) //If any of them is a special symbol
+                        {
+                            printf("Invalid identifier: Contains operator as character");
                             return 0;
                         }
                     }
@@ -139,23 +168,19 @@ int main(int argc, char *argv[])
             printf("Identifier length exceeded maximum size.");
             return 0;
         }
+        printf("%s\t\t\t%d", tokenInput, (int)FindTokenType(tokenInput));
     }
 
     return 0;
 }
 
-<<<<<<< HEAD
 
-int ReturnTokenNumber(char tokenInput[])
-{
-
-=======
 //prints out the input file with comments
 void PrintOutInputFile(FILE * ifpFGETS)
 {
     char line[500];
     //reads in an entire line and prints
-    while(fgets(line, 500, ifpFGETS)) 
+    while(fgets(line, 500, ifpFGETS))
     {
         printf("%s", line);
     }
@@ -167,10 +192,10 @@ void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
 {
     char lineNOCOMMENTS[500];
     //reads in every line
-    while(fgets(lineNOCOMMENTS, 500, ifpNOCOMMENTS)) 
+    while(fgets(lineNOCOMMENTS, 500, ifpNOCOMMENTS))
     {
         //checks if a comment is present and removes the comment
-        if (strstr(lineNOCOMMENTS, "/*") != NULL) 
+        if (strstr(lineNOCOMMENTS, "/*") != NULL)
         {
             char *a = strstr(lineNOCOMMENTS, "/*");
             char *b = strstr (lineNOCOMMENTS, "*/");
@@ -180,13 +205,12 @@ void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
             }
 
             memmove(a, b+2, strlen(b)+1);
-        }       
+        }
 
         //prints out the line with no comments
         printf("%s", lineNOCOMMENTS);
 
     }
->>>>>>> refs/remotes/origin/master
 }
 
 void ParseSourceCode()
