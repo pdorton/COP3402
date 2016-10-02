@@ -172,6 +172,194 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}// end of main
+
+// read in each token and find out what kind of valid token it is
+TokenType FindTokenType( char* token)
+{
+    /*nulsym = 1,   done
+    identsym = 2,   done
+    numbersym = 3,  done 
+    plussym = 4,    done
+    minussym = 5,   done
+  multsym = 6,      done
+  slashsym = 7,     done
+  oddsym = 8,       done
+  eqsym = 9,        done
+  neqsym = 10,      done
+  lessym = 11,      done
+  leqsym = 12,      done
+  gtrsym = 13,      done
+  geqsym = 14,      done
+  lparentsym = 15,  done
+  rparentsym = 16,  done
+  commasym = 17,    done
+  semicolonsym = 18,done
+  periodsym = 19,   done
+  becomessym = 20,  done
+  beginsym = 21,    done
+  endsym = 22,      done
+  ifsym = 23,       done
+  thensym = 24,     done
+  whilesym = 25,    done
+  dosym = 26,       done
+  callsym = 27,     done
+  constsym = 28,    done
+  varsym = 29,      done
+  procsym = 30,     done
+  writesym = 31,    done
+  readsym =  32,    done
+  elsesym = 33      done*/
+  if(strlen(token) == 1)
+  {// if the token is a single character 
+    if(isdigit(token))
+    {
+        return numbersym;
+    }
+    else if(isalpha(token))
+    {
+        return identsym;
+    }
+    else
+        switch(token)
+        {
+            case '+':
+                return plussym;
+            case '-':
+                return minussym;
+            case '*':
+                return multsym;
+            case '/':
+                return slashsym;
+            case '(':
+                return lparentsym;
+            case ')':
+                return rparentsym;
+            case ';':
+                return semicolonsym;
+            case '.':
+                return periodsym;
+            case '=' :
+                return equsym;
+            case ',' :
+                return commasym;
+            case '<' :
+                return lessym;
+            case '>' :
+                return geqsym;
+            default  :
+                //if not any of the single symbols
+                printf("illegal token\n");
+                return nulsym;
+
+        }
+
+  }// end of if length 1 tokens
+
+  else if(strlen(token) > 1)
+  {// if longer than 1 char
+    if(isdigit(token[0]))
+    {//if the first char is a digit
+        return numbersym;
+    }
+    else if(isalpha(token[0]))
+    {// if it is a word check all keywords
+            if(strcmp(token, "const") == 0)
+            {
+                return constsym;
+            }
+            else if(strcmp(token, "var") == 0)
+            {
+                return varsym
+            }
+            else if(strcmp(token, "procedure") == 0)
+            {
+                return procsym;
+            }
+            else if(strcmp(token, "call") == 0)
+            {
+                return callsym;
+            }
+            else if(strcmp(token, "begin") == 0)
+            {
+                return beginsym;
+            }
+            else if(strcmp(token, "end") == 0)
+            {
+                return endsym;
+            }
+            else if(strcmp(token, "if") == 0)
+            {
+                return ifsym;
+            }
+            else if(strcmp(token, "then") == 0)
+            {
+                return thensym;
+            }
+            else if(strcmp(token, "else") == 0)
+            {
+                return elsesym;
+            }
+            else if(strcmp(token, "while") == 0)
+            {
+                return whilesym;
+            }
+            else if(strcmp(token, "do") == 0)
+            {
+                return dosym;
+            }
+            else if(strcmp(token, "read") == 0)
+            {
+                return readsym;
+            }
+            else if(strcmp(token, "write") == 0)
+            {
+                return writesym;
+            }
+            else if(strcmp(token, "odd") == 0)
+            {
+                return oddsym;
+            }
+            else
+            {
+                return identsym;
+            }
+
+    }
+    else if(!isalnum(token[0]))
+    {// multiple character non alphanumeric symbols
+        if(strcmp(token, ">=") == 0)
+        {
+            return geqsym;
+        }
+        else if(strcmp(token, "<=") == 0)
+        {
+            return leqsym;         
+        }
+        else if(strcmp(token, ":=") == 0)
+        {
+            becomessym;
+        }
+        else if(strcmp(token, "<>") == 0)
+        {
+            return neqsym;
+        }
+        else
+        {// non valid multiple character symbols
+            printf("illegal token\n");
+            return nulsym;
+        }
+            
+        
+    }
+    else
+    {
+        printf("illegal token\n");
+        return nulsym;
+    }
+  }// end of multiple char tokens
+
+
 }
 
 
