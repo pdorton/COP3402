@@ -31,6 +31,7 @@ typedef struct myToken
 void InitializeReservedWords();
 void InitializeReservedOperators();
 void ImportSourceCode(FILE * ifp);
+void PrintOutInputFile(FILE * ifp);
 
 
 #define MAX_ID_LENGTH 12
@@ -49,6 +50,7 @@ int main(int argc, char *argv[])
 
     FILE * ifp = fopen("input.txt", "r");
 
+    PrintOutInputFile(ifp);
     ImportSourceCode(ifp);
 
     if(ifp == NULL)
@@ -61,6 +63,16 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void PrintOutInputFile(FILE * ifp)
+{
+    char string[100];
+    while(fgets(string, 100, ifp)) 
+    {
+        printf("%s", string);
+    }
+
 }
 
 void ParseSourceCode()
