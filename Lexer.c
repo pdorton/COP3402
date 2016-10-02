@@ -25,13 +25,15 @@ typedef struct myToken
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 //#include "tokens.h"
 
 //PROTOTYPES
 void InitializeReservedWords();
 void InitializeReservedOperators();
 void ImportSourceCode(FILE * ifp);
-void PrintOutInputFile(FILE * ifp);
+void PrintOutInputFile(FILE * ifpFGETS);
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
 
 
 #define MAX_ID_LENGTH 12
@@ -49,9 +51,15 @@ int main(int argc, char *argv[])
     InitializeReservedOperators();
 
     FILE * ifp = fopen("input.txt", "r");
+    FILE * ifpFGETS = fopen("input.txt", "r");
+    FILE * ifpNOCOMMENTS = fopen("input.txt", "r");
 
-    PrintOutInputFile(ifp);
+
+
     ImportSourceCode(ifp);
+    PrintOutInputFile(ifpFGETS);
+    printf("\n\n");
+    PrintOutInputFileNoComments(ifpNOCOMMENTS);
 
     if(ifp == NULL)
     {
@@ -65,14 +73,37 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void PrintOutInputFile(FILE * ifp)
+void PrintOutInputFile(FILE * ifpFGETS)
 {
-    char string[100];
-    while(fgets(string, 100, ifp)) 
+    char line[100];
+    while(fgets(line, 100, ifpFGETS)) 
     {
-        printf("%s", string);
+        printf("%s", line);
     }
 
+}
+
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
+{
+    char lineNOCOMMENTS[100];
+    while(fgets(lineNOCOMMENTS, 100, ifpNOCOMMENTS)) 
+    {
+        if (strstr(lineNOCOMMENTS, "/*") != NULL) 
+        {
+            //char str[] = "ID is a sample string remove to /0.10";
+            char *a = strstr(lineNOCOMMENTS, "/*");
+            char *b = strstr (lineNOCOMMENTS, "*/");
+            if ((a == NULL) || (b == NULL) || (b < a))
+            {
+                exit(0);
+            }
+
+            memmove(a, b+2, strlen(b)+1);
+        }       
+
+        printf("%s", lineNOCOMMENTS);
+
+    }
 }
 
 void ParseSourceCode()
