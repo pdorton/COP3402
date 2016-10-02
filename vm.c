@@ -75,7 +75,7 @@ int main()
             fprintf(ofp, "%d\t%s", counter, OPCODES[input1 - 1]);
         if(input1 !=9)
         {
-        	if(OPCODES[input1 - 1] == OPCODES[3] || OPCODES[input1 - 1] == OPCODES[4])
+        	if(OPCODES[input1 - 1] == OPCODES[3] || OPCODES[input1 - 1] == OPCODES[4] || OPCODES[input1-1] == OPCODES[2])
         	{
         		instructionSet[counter].l = input2;
         		fprintf(ofp, "\t%d", input2);
@@ -132,7 +132,7 @@ int main()
 
         }
 
-        if(OPCODES[op] == OPCODES[3] || OPCODES[op] == OPCODES[4])
+        if(OPCODES[op] == OPCODES[3] || OPCODES[op] == OPCODES[4] || OPCODES[op] == OPCODES[2])
         {
         	fprintf(ofp, "%d\t%s\t%d\t%d\t", pc, OPCODES[op], l , m);
         }
@@ -317,7 +317,7 @@ int main()
                     fprintf(ofp, "| ");
                     c++;
                 }
-                fprintf(ofp, "%d", stack[i]);
+                fprintf(ofp, "%d ", stack[i]);
                 
             }
             fprintf(ofp, "\n");
