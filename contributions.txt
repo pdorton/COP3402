@@ -1,2 +1,13 @@
 ---PL/0 Lexer---
+<<<<<<< HEAD
 Michael Garro: Wrote InitializeReservedWords and ImportSourceCode
+=======
+Michael Garro
+-Wrote InitializeReservedWords and ImportSourceCode
+
+Andrew Maida
+
+David Almeida
+
+Patrick Dorton
+>>>>>>> c9a40461b61b8a805fb6f40079c49e428be4535a
