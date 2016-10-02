@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
 
     ImportSourceCode(ifp);
 
-   /* if(ifp == null)
+    if(ifp == NULL)
     {
         printf("Could not open file");
     }
     else
     {
          ImportSourceCode(ifp);
-    }*/
+    }
 
     return 0;
 }
