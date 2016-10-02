@@ -3,6 +3,7 @@
  Patrick Dorton
  Andrew Maida
  Michael Garro
+ David Almeida
  COP 3402-16Fall001
  MW 7:30-8:45
 */
@@ -69,19 +70,24 @@ int main()
         }
         else
             fprintf(ofp, "%d\t%s\t", counter, OPCODES[input1 - 1]);
+        if(input1 !=9)
+        {
+        	//if(OPCODES[input1 - 1] != "SIO" || OPCODES[input1 - 1] != "CAL")
+        	//{
+        	instructionSet[counter].l = input2;
+        	fprintf(ofp, "%d\t", input2);
+        	//}
 
-        instructionSet[counter].l = input2;
-        fprintf(ofp, "%d\t", input2);
-
-        instructionSet[counter].m = input3;
-        fprintf(ofp, "%d\n", input3);
-
+        	instructionSet[counter].m = input3;
+        	fprintf(ofp, "%d\n", input3);
+		}
         counter++;
     }
 
     instructionCount = counter - 1;
     counter = 0;
     int instructionsRead = 0;
+    fprintf(ofp, "\n\nExecution:\n\t\t\t\tpc\tbp\tsp\tstack\n\t\t\t\t%d\t%d\t%d\n", pc, bp, sp);
 
     while (instructionsRead <= instructionCount)
     {
@@ -101,19 +107,19 @@ int main()
 
         switch(op)
         {
-            case 1:  //LIT
+            case 0:  //LIT
                 sp++;
                 stack[sp] = m;
                 break;
 
-            case 2:  //OPR
+            case 1:  //OPR
                 switch (m)
                 {
                     case 0:
                         sp = bp - 1;
                         pc = stack[sp + 4];
                         bp = stack[sp + 3];
-                        /*int k = 0;
+                        int k = 0;
                         while(1)
                         {
                             if (activationRecords[k] == sp)
@@ -122,7 +128,7 @@ int main()
                                 break;
                             }
                             k++;
-                        }*/
+                        }
                         break;
 
                     case 1:
@@ -190,19 +196,19 @@ int main()
                 }
                 break;
 
-                case 3: // "LOD"
+                case 2: // "LOD"
                     sp++;
                     stack[sp] = stack[base(l, bp) + m];
                     break;
 
 
-                case 4: // "STO"
+                case 3: // "STO"
                     stack[base(l, bp) + m] = stack[sp];
                     sp--;
                     break;
 
 
-                case 5: // "CAL"
+                case 4: // "CAL"
                     stack[sp + 1] = 0;
                     stack[sp + 2] = base(l, bp);
                     stack[sp + 3] = bp;
@@ -212,29 +218,29 @@ int main()
                     break;
 
 
-                case 6: // "INC"
-                    /*if(sp > 0)
+                case 5: // "INC"
+                    if(sp > 0)
                     {
                         activationRecords[activationRecordsIndex] = sp; // so the '|' can be outputted correctly
                         activationRecordsIndex++;
-                    }*/
+                    }
                     sp = sp + m;
                     break;
 
 
-                case 7: // "JMP"
+                case 6: // "JMP"
                     pc = m;
                     break;
 
 
-                case 8: // "JPC"
+                case 7: // "JPC"
                     if(stack[sp] == 0)
                         pc = m;
                     sp--;
                     break;
 
 
-                case 9: // "SIO"
+                case 8: // "SIO"
                     switch (m)
                     {
                         case 1:  //OUT
@@ -255,7 +261,7 @@ int main()
                             return 0;
                     }
         }
-
+        
         if(flag == 0)
         {
             fprintf(ofp, "%d\t%d\t%d\t", pc, bp, sp);
