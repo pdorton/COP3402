@@ -12,14 +12,14 @@ typedef enum token {
   gtrsym = 13, geqsym = 14, lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
   periodsym = 19, becomessym = 20, beginsym = 21, endsym = 22, ifsym = 23, thensym = 24,
   whilesym = 25, dosym = 26, callsym = 27, constsym = 28, varsym = 29, procsym = 30, writesym = 31,
-  readsym =  32, elsesym = 33 
+  readsym =  32, elsesym = 33
 } TokenType;
 
 typedef struct myToken
 {
     TokenType type;
     char string[14];
-}Token
+}Token;
 
 
 
@@ -48,21 +48,18 @@ int main(int argc, char *argv[])
     InitializeReservedOperators();
 
     FILE * ifp = fopen("input.txt", "r");
-<<<<<<< HEAD
 
     ImportSourceCode(ifp);
 
-=======
-    if(ifp == null)
+   /* if(ifp == null)
     {
         printf("Could not open file");
     }
     else
     {
          ImportSourceCode(ifp);
-    }
-   
->>>>>>> 55fa1b97cef8c2d801cdbf250c6a4d4327722cfc
+    }*/
+
     return 0;
 }
 
