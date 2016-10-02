@@ -43,10 +43,24 @@ int main(int argc, char *argv[])
     FILE * ifp = fopen("input.txt", "r");
 
     ImportSourceCode(ifp);
+
     return 0;
 }
 
-
+void ParseSourceCode()
+{
+    int i;
+    int j;
+    int tokenLength;
+    for (i = 0; i < numTokens; i++)
+    {
+        tokenLength = strlen(tokenCollection[i]);
+        for (j = 0; j < tokenLength; j++)
+        {
+            //switch ()
+        }
+    }
+}
 
 void ImportSourceCode(FILE * ifp)
 {
