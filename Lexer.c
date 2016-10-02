@@ -25,13 +25,19 @@ typedef struct myToken
 
 #include <stdio.h>
 #include <string.h>
+<<<<<<< HEAD
 #include <ctype.h>
+=======
+#include <stdlib.h>
+>>>>>>> refs/remotes/origin/master
 //#include "tokens.h"
 
 //PROTOTYPES
 void InitializeReservedWords();
 void InitializeReservedOperators();
 void ImportSourceCode(FILE * ifp);
+void PrintOutInputFile(FILE * ifpFGETS);
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
 
 
 #define MAX_ID_LENGTH 12
@@ -44,13 +50,46 @@ int numTokens = 0;
 
 int main(int argc, char *argv[])
 {
+    int i = 0;
+    int showSource = 0;
+    int showClean = 0;
+
     //Initialize the reserved words into the array
     InitializeReservedWords();
     InitializeReservedOperators();
 
     FILE * ifp = fopen("input.txt", "r");
+    FILE * ifpFGETS = fopen("input.txt", "r");
+    FILE * ifpNOCOMMENTS = fopen("input.txt", "r");
+
+    for(i=0 ; i<argc ; i++)
+    {
+        if(strcmp(argv[i], "--source") == 0)
+            showSource = 1;
+        if(strcmp(argv[i], "--clean") == 0)
+            showClean = 1;
+
+    }
 
     //ImportSourceCode(ifp);
+
+    if(showSource)
+    {
+        printf("source code:\n------------\n");
+        PrintOutInputFile(ifpFGETS);
+    }
+
+<<<<<<< HEAD
+    //ImportSourceCode(ifp);
+=======
+    if(showClean)
+    {
+        printf("\n\nsource code without comments:\n-----------------------------\n");
+        PrintOutInputFileNoComments(ifpNOCOMMENTS);
+    }
+
+    printf("\n\ntokens:\n-------\n");
+>>>>>>> refs/remotes/origin/master
 
     if(ifp == NULL)
     {
@@ -105,10 +144,49 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+<<<<<<< HEAD
 
 int ReturnTokenNumber(char tokenInput[])
 {
 
+=======
+//prints out the input file with comments
+void PrintOutInputFile(FILE * ifpFGETS)
+{
+    char line[500];
+    //reads in an entire line and prints
+    while(fgets(line, 500, ifpFGETS)) 
+    {
+        printf("%s", line);
+    }
+
+}
+
+//removes comments and prints out the input file contents
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
+{
+    char lineNOCOMMENTS[500];
+    //reads in every line
+    while(fgets(lineNOCOMMENTS, 500, ifpNOCOMMENTS)) 
+    {
+        //checks if a comment is present and removes the comment
+        if (strstr(lineNOCOMMENTS, "/*") != NULL) 
+        {
+            char *a = strstr(lineNOCOMMENTS, "/*");
+            char *b = strstr (lineNOCOMMENTS, "*/");
+            if ((a == NULL) || (b == NULL) || (b < a))
+            {
+                exit(0);
+            }
+
+            memmove(a, b+2, strlen(b)+1);
+        }       
+
+        //prints out the line with no comments
+        printf("%s", lineNOCOMMENTS);
+
+    }
+>>>>>>> refs/remotes/origin/master
 }
 
 void ParseSourceCode()
