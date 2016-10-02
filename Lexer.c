@@ -55,11 +55,16 @@ int main(int argc, char *argv[])
     FILE * ifpNOCOMMENTS = fopen("input.txt", "r");
 
 
+    printf("source code:\n------------\n");
 
     ImportSourceCode(ifp);
     PrintOutInputFile(ifpFGETS);
-    printf("\n\n");
+
+    printf("\n\nsource code without comments:\n-----------------------------\n");
+
     PrintOutInputFileNoComments(ifpNOCOMMENTS);
+
+    printf("\n\ntokens:\n-------\n");
 
     if(ifp == NULL)
     {
@@ -73,24 +78,28 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+//prints out the input file with comments
 void PrintOutInputFile(FILE * ifpFGETS)
 {
-    char line[100];
-    while(fgets(line, 100, ifpFGETS)) 
+    char line[500];
+    //reads in an entire line and prints
+    while(fgets(line, 500, ifpFGETS)) 
     {
         printf("%s", line);
     }
 
 }
 
+//removes comments and prints out the input file contents
 void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
 {
-    char lineNOCOMMENTS[100];
-    while(fgets(lineNOCOMMENTS, 100, ifpNOCOMMENTS)) 
+    char lineNOCOMMENTS[500];
+    //reads in every line
+    while(fgets(lineNOCOMMENTS, 500, ifpNOCOMMENTS)) 
     {
+        //checks if a comment is present and removes the comment
         if (strstr(lineNOCOMMENTS, "/*") != NULL) 
         {
-            //char str[] = "ID is a sample string remove to /0.10";
             char *a = strstr(lineNOCOMMENTS, "/*");
             char *b = strstr (lineNOCOMMENTS, "*/");
             if ((a == NULL) || (b == NULL) || (b < a))
@@ -101,6 +110,7 @@ void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
             memmove(a, b+2, strlen(b)+1);
         }       
 
+        //prints out the line with no comments
         printf("%s", lineNOCOMMENTS);
 
     }
