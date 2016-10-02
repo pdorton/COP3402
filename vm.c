@@ -6,6 +6,7 @@
  David Almeida
  COP 3402-16Fall001
  MW 7:30-8:45
+ version 1.0 (tested with just single input file from wiki)
 */
 
 #include <stdio.h>
