@@ -9,6 +9,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define MAX_LEXI_LEVELS 3
@@ -55,31 +56,42 @@ int main()
     FILE *ifp = fopen("input.txt", "r");
     FILE *ofp = fopen("output.txt", "w");
 
-    fprintf(ofp, "PL/0 Code:\n");
+    fprintf(ofp, "PL/0 Code:\n\n");
 
     while(fscanf(ifp, "%d %d %d", &input1, &input2, &input3) != EOF)
     {
         instructionSet[counter].op = input1;
+
         if (input1 == 2)
         {
-            fprintf(ofp, "%d\t%s\t", counter, OPRcodes[input3]);
+            fprintf(ofp, "%d\t%s", counter, OPRcodes[input3]);
         }
         else if (input1 == 9)
         {
-            fprintf(ofp, "%d\t%s\t", counter, SIOCODES[input3]);
+            fprintf(ofp, "%d\t%s", counter, SIOCODES[input3]);
         }
         else
-            fprintf(ofp, "%d\t%s\t", counter, OPCODES[input1 - 1]);
+            fprintf(ofp, "%d\t%s", counter, OPCODES[input1 - 1]);
         if(input1 !=9)
         {
-        	//if(OPCODES[input1 - 1] != "SIO" || OPCODES[input1 - 1] != "CAL")
-        	//{
-        	instructionSet[counter].l = input2;
-        	fprintf(ofp, "%d\t", input2);
-        	//}
-
-        	instructionSet[counter].m = input3;
-        	fprintf(ofp, "%d\n", input3);
+        	if(OPCODES[input1 - 1] == OPCODES[3] || OPCODES[input1 - 1] == OPCODES[4])
+        	{
+        		instructionSet[counter].l = input2;
+        		fprintf(ofp, "\t%d", input2);
+        	}
+        	else
+        	{
+        		fprintf(ofp, "\t");
+        	}
+        	if(OPCODES[input1] != OPCODES[2] && OPRcodes != OPRcodes[0])	
+        	{
+        		instructionSet[counter].m = input3;
+        		fprintf(ofp, "\t%d\n", input3);
+        	}
+        	else
+        	{
+        		fprintf(ofp, "\n");
+        	}
 		}
         counter++;
     }
@@ -96,7 +108,37 @@ int main()
         int m = instructionSet[pc].m;
         int op = instructionSet[pc].op - 1;
 
-        fprintf(ofp, "%d\t%s\t%d\t%d\t", pc, OPCODES[op], l, m);
+        	
+        if(OPCODES[op] == OPCODES[1] )
+        {
+        	OPCODES[op] = OPRcodes[op-1];
+        }
+
+
+        if(OPCODES[op] == OPCODES[10]) 
+        {
+        	OPCODES[op] = SIOCODES[2];
+
+        }
+        if(OPCODES[op] == OPCODES[9]) 
+        {
+        	OPCODES[op] = SIOCODES[1];
+
+        }
+        if(OPCODES[op] == OPCODES[8]) 
+        {
+        	OPCODES[op] = SIOCODES[0];
+
+        }
+
+        if(OPCODES[op] == OPCODES[3] || OPCODES[op] == OPCODES[4])
+        {
+        	fprintf(ofp, "%d\t%s\t%d\t%d\t", pc, OPCODES[op], l , m);
+        }
+        else
+        {
+        	fprintf(ofp, "%d\t%s\t\t%d\t", pc, OPCODES[op], m);
+    	}
 
         if (pc == instructionCount)
         {
@@ -261,22 +303,24 @@ int main()
                             return 0;
                     }
         }
-        
+
         if(flag == 0)
         {
             fprintf(ofp, "%d\t%d\t%d\t", pc, bp, sp);
-            int i;
+            int i = 1;
             int c = 0;
             for(i = 1; i <= sp; i++)
             {
-                if(i == activationRecords[c] + 1 && sp > activationRecords[c] + 1 && c != 0)
+                if(i == activationRecords[c] + 1 && sp > activationRecords[c] + 1 && activationRecords[c] != 0)
                 {
                     fprintf(ofp, "| ");
                     c++;
                 }
-                fprintf(ofp, "%d ", stack[i]);
+                fprintf(ofp, "%d", stack[i]);
+                
             }
             fprintf(ofp, "\n");
+            
         }
 
         if(lastInstruction == 1)
@@ -295,7 +339,7 @@ int base(int l, int base)
     int b = base;
     while(l > 0)
     {
-        b = stack[b];
+        b = stack[b + 1];
         l--;
     }
     return b;
