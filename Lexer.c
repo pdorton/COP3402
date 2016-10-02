@@ -13,7 +13,14 @@ typedef enum token {
   periodsym, becomessym, beginsym, endsym, ifsym, thensym,
   whilesym, dosym, callsym, constsym, varsym, procsym, writesym,
   readsym , elsesym
-} token_type;
+} TokenType;
+
+typedef struct myToken
+{
+    TokenType type;
+    char string[14];
+}Token
+
 
 
 #include <stdio.h>
