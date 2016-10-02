@@ -8,7 +8,8 @@ Michael Garro
 Andrew Maida
 -wrote funtion to output input file to screen
 -wrote function to output cleaned input file to screen
--wrote command line argument handlers for --source and -- clean
+-wrote command line argument handlers for --source and --clean
+-wrote reservedOperations function
 
 David Almeida
 - debugged vm.c into working order
