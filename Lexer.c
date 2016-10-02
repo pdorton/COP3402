@@ -48,8 +48,15 @@ int main(int argc, char *argv[])
     InitializeReservedOperators();
 
     FILE * ifp = fopen("input.txt", "r");
-
-    ImportSourceCode(ifp);
+    if(ifp == null)
+    {
+        printf("Could not open file");
+    }
+    else
+    {
+         ImportSourceCode(ifp);
+    }
+   
     return 0;
 }
 
