@@ -46,6 +46,10 @@ int numTokens = 0;
 
 int main(int argc, char *argv[])
 {
+    int i = 0;
+    int showSource = 0;
+    int showClean = 0;
+
     //Initialize the reserved words into the array
     InitializeReservedWords();
     InitializeReservedOperators();
@@ -54,15 +58,28 @@ int main(int argc, char *argv[])
     FILE * ifpFGETS = fopen("input.txt", "r");
     FILE * ifpNOCOMMENTS = fopen("input.txt", "r");
 
+    for(i=0 ; i<argc ; i++)
+    {
+        if(strcmp(argv[i], "--source") == 0)
+            showSource = 1;
+        if(strcmp(argv[i], "--clean") == 0)
+            showClean = 1;
 
-    printf("source code:\n------------\n");
+    }
 
-    ImportSourceCode(ifp);
-    PrintOutInputFile(ifpFGETS);
+    //ImportSourceCode(ifp);
 
-    printf("\n\nsource code without comments:\n-----------------------------\n");
+    if(showSource)
+    {
+        printf("source code:\n------------\n");
+        PrintOutInputFile(ifpFGETS);
+    }
 
-    PrintOutInputFileNoComments(ifpNOCOMMENTS);
+    if(showClean)
+    {
+        printf("\n\nsource code without comments:\n-----------------------------\n");
+        PrintOutInputFileNoComments(ifpNOCOMMENTS);
+    }
 
     printf("\n\ntokens:\n-------\n");
 
