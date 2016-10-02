@@ -25,6 +25,7 @@ typedef enum token {
 #define MAX_INTEGER 65535
 
 char* RESERVED_WORDS[14];
+char* RESERVED_OPERATORS[16];
 char* tokenCollection[10000];
 int numTokens = 0;
 
@@ -73,4 +74,26 @@ void InitializeReservedWords()
     RESERVED_WORDS[11] = "read";
     RESERVED_WORDS[12] = "write";
     RESERVED_WORDS[13] = "odd";
+}
+
+//Instantiates the array of reserved operators of the PL/0 Language
+void InitializeReservedOperators()
+{
+    //Initialize the reserved words into the array
+    RESERVED_OPERATORS[0] = "+";
+    RESERVED_OPERATORS[0] = "-";
+    RESERVED_OPERATORS[0] = "*";
+    RESERVED_OPERATORS[0] = "/";
+    RESERVED_OPERATORS[0] = "=";
+    RESERVED_OPERATORS[0] = "<>";
+    RESERVED_OPERATORS[0] = "<=";
+    RESERVED_OPERATORS[0] = "<";
+    RESERVED_OPERATORS[0] = ">=";
+    RESERVED_OPERATORS[0] = ">";
+    RESERVED_OPERATORS[0] = ":=";
+    RESERVED_OPERATORS[0] = ",";
+    RESERVED_OPERATORS[0] = ";";
+    RESERVED_OPERATORS[0] = ".";
+    RESERVED_OPERATORS[0] = "(";
+    RESERVED_OPERATORS[0] = ")";
 }
