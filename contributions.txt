@@ -8,6 +8,7 @@ Michael Garro
 Andrew Maida
 
 David Almeida
+- debugged vm.c into working order
 
 Patrick Dorton
 >>>>>>> c9a40461b61b8a805fb6f40079c49e428be4535a
