@@ -25,6 +25,7 @@ typedef struct myToken
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 //#include "tokens.h"
 
 //PROTOTYPES
@@ -49,18 +50,65 @@ int main(int argc, char *argv[])
 
     FILE * ifp = fopen("input.txt", "r");
 
-    ImportSourceCode(ifp);
+    //ImportSourceCode(ifp);
 
     if(ifp == NULL)
     {
-        printf("Could not open file");
+        printf("Could not open file.");
+        return 0;
     }
     else
     {
-         ImportSourceCode(ifp);
+         //ImportSourceCode(ifp);
+    }
+
+    char tokenInput[100];
+    while(fscanf(ifp, "%s", tokenInput) != EOF)
+    {
+        if (strlen(tokenInput) < MAX_ID_LENGTH)
+        {
+            //tokenCollection[numTokens] = tokenInput;
+            //numTokens++;
+            if (isalpha(tokenInput[strlen(tokenInput) - 1] != 0))
+            {
+                if (isdigit(tokenInput[0]) != 0)
+                {
+                    printf("Invalid start of identifier %s", tokenInput);
+                    return 0;
+                }
+                else if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0)
+                {
+                    printf("Invalid start of identifier %s", tokenInput);
+                    return 0;
+                }
+                else
+                {
+                    int i;
+                    for (i = 1; i < strlen(tokenInput) - 1; i++)
+                    {
+                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0)
+                        {
+                            printf("Invalid identifier %s", tokenInput);
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            printf("Identifier length exceeded maximum size.");
+            return 0;
+        }
     }
 
     return 0;
+}
+
+
+int ReturnTokenNumber(char tokenInput[])
+{
+
 }
 
 void ParseSourceCode()
