@@ -20,6 +20,11 @@ typedef enum token {
 #include <string.h>
 //#include "tokens.h"
 
+//PROTOTYPES
+void InitializeReservedWords();
+void InitializeReservedOperators();
+void ImportSourceCode(FILE * ifp);
+
 
 #define MAX_ID_LENGTH 12
 #define MAX_INTEGER 65535
@@ -29,7 +34,7 @@ char* RESERVED_OPERATORS[16];
 char* tokenCollection[10000];
 int numTokens = 0;
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     //Initialize the reserved words into the array
     InitializeReservedWords();
@@ -38,7 +43,7 @@ void main(int argc, char *argv[])
     FILE * ifp = fopen("input.txt", "r");
 
     ImportSourceCode(ifp);
-    return;
+    return 0;
 }
 
 
