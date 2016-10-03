@@ -35,7 +35,7 @@ void InitializeReservedOperators();
 void ImportSourceCode(FILE * ifp);
 void PrintOutInputFile(FILE * ifpFGETS);
 void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
-
+TokenType FindTokenType( char* token);
 
 #define MAX_ID_LENGTH 13
 #define MAX_INTEGER 65535
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
             printf("Identifier length exceeded maximum size.");
             return 0;
         }
-        printf("%s\t\t\t%d", tokenInput, (int)FindTokenType(tokenInput));
+        printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
     }
 
     return 0;
@@ -212,16 +212,16 @@ TokenType FindTokenType( char* token)
   elsesym = 33      done*/
   if(strlen(token) == 1)
   {// if the token is a single character 
-    if(isdigit(token))
+    if(isdigit(token[0]))
     {
         return numbersym;
     }
-    else if(isalpha(token))
+    else if(isalpha(token[0]))
     {
         return identsym;
     }
     else
-        switch(token)
+        switch(token[0])
         {
             case '+':
                 return plussym;
@@ -240,7 +240,7 @@ TokenType FindTokenType( char* token)
             case '.':
                 return periodsym;
             case '=' :
-                return equsym;
+                return eqsym;
             case ',' :
                 return commasym;
             case '<' :
@@ -270,7 +270,7 @@ TokenType FindTokenType( char* token)
             }
             else if(strcmp(token, "var") == 0)
             {
-                return varsym
+                return varsym;
             }
             else if(strcmp(token, "procedure") == 0)
             {
