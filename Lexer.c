@@ -36,6 +36,7 @@ void ImportSourceCode(FILE * ifp);
 void PrintOutInputFile(FILE * ifpFGETS);
 void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
 TokenType FindTokenType( char* token);
+char* chop(char* raw);
 
 #define MAX_ID_LENGTH 13
 #define MAX_INTEGER 65535
@@ -47,6 +48,7 @@ int numTokens = 0;
 
 int main(int argc, char *argv[])
 {
+    int commentFlag = 0;
     int i = 0;
     int showSource = 0;
     int showClean = 0;
@@ -97,70 +99,132 @@ int main(int argc, char *argv[])
          //ImportSourceCode(ifp);
     }
 
+
+
+
     char tokenInput[100];
     while(fscanf(ifp, "%s", tokenInput) != EOF)
     {
         if (strlen(tokenInput) < MAX_ID_LENGTH) //If the length of the token is within the limit of 12 chars plus one symbol at the end
         {
-            //tokenCollection[numTokens] = tokenInput;
-            //numTokens++;
-            if (isalpha(tokenInput[strlen(tokenInput) - 1] != 0))  //If the last char is a letter
+
+            if(strcmp(tokenInput, "/*") == 0) // if the beginning of a comment
+            {   
+                while(strcmp(tokenInput, "*/" != 0)
+                {// until the token reads in the end of comment symbol read through tokens 
+                    fscanf(ifp, "%s", tokenInput);
+                }
+            }
+
+            if(!isalnum(tokenInput[strlen(tokenInput) -1 ] )) // if the last char is a special character
             {
-                if (isdigit(tokenInput[0]) != 0)  //If the first char is a number
+                if(strlen(tokenInput) < 3)// if the token is length 2
                 {
-                    printf("Invalid start of identifier %s", tokenInput);
-                    return 0;
-                }
-                else if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0) //If the first char is a special symbol
-                {
-                    printf("Invalid start of identifier %s", tokenInput);
-                    return 0;
-                }
-                else  //Otherwise, we need to search the rest of the token
-                {
-                    int i;
-                    for (i = 1; i < strlen(tokenInput) - 1; i++)
+                    if(!isalnum(tokenInput[0]))//check if the first char is a special character
+                    {// if yes then send the whole token and have to check for comments 
+                        FindTokenType(tokenInput));
+                    }
+                    else// tear them apart and send each then move to next token 
                     {
-                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0) //If any of the chars are special chars
-                        {
+                        printf("%c\t\t\t%d\n", tokenInput[0], (int)FindTokenType(tokenInput[0]));
+                        printf("%c\t\t\t%d\n", tokenInput[1], (int)FindTokenType(tokenInput[1]));
+                    }
+                }
+                else if(isdigit(tokenInput[0]))// if the first char is a digit, then check all chars to see find a alpha
+                {   
+                    int i;
+                    for(i = 0 ; i < strlen(tokenInput) -1; i++)
+                    {// for every character except the last
+                        if(isalpha(tokenInput[i]))
+                        {// if the word contains a character after starting with a number
                             printf("Invalid identifier %s", tokenInput);
                             return 0;
                         }
                     }
-                }
-            }
-            else if (isdigit(tokenInput[strlen(tokenInput) - 1] != 0) )  //If the last char is a number
-            {
-                if (isascii(tokenInput[0]) != 0 && isalnum(tokenInput[0]) == 0) //If the first char is a special symbol
-                {
-                    printf("Invalid identifier: Operator as start character");
-                    return 0;
-                }
-                else if (strlen(tokenInput) > 6 && isdigit(tokenInput[0]) != 0)  //If the first char is a number and length is bigger than 6
-                {
-                    printf("Integer digit Overflow");
-                    return 0;
-                }
-                else if (strlen(tokenInput) == 6 && isdigit(tokenInput[0]) != 0) //If the first char is a number and the length is equal to 6
-                {
-                    if (atoi(tokenInput) > MAX_INTEGER)  //Check the numerical value
+                    //all chars are digits 
+
+                    if(strlen(tokenInput) > 6)
                     {
-                        printf("Integer Overflow");
+                        printf("Integer digit Overflow");
                         return 0;
                     }
+                    else if(strlen(tokenInput) == 6)// if the digit is 6 characters long
+                    {
+                        if(atoi(chop(tokenInput)) > MAX_INTEGER)// check if over max allowed value
+                        {
+                            printf("Integer Overflow");
+                            return 0;
+                        }
+                        else// is valid number
+                        {
+                            printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
+                            printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                        }
+                    }
+                    else// if the token is not longer than 6 characters chop and print
+                    {
+                      printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
+                            printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                    }
                 }
-                else  //Otherwise, run through the rest of the token
+                else // if the length of the token  is longer than 2 then it cannot be a special char by itself rip the last and send the rest
+                {
+                    printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
+                    printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                }
+            }
+            else if()// if last char is a digit
+            {
+                if(isdigit(tokenInput[0]))// check if first is a digit
                 {
                     int i;
-                    for (i = 1; i < strlen(tokenInput) - 1; i++)
-                    {
-                        if (isascii(tokenInput[i]) != 0 && isalnum(tokenInput[i]) == 0) //If any of them is a special symbol
-                        {
-                            printf("Invalid identifier: Contains operator as character");
+                    for(i = 0 ; i < strlen(tokenInput) -1; i++)
+                    {// for every character except the last
+                        if(isalpha(tokenInput[i]))
+                        {// if the word contains a character after starting with a number
+                            printf("Invalid identifier %s", tokenInput);
                             return 0;
                         }
                     }
+                    //all chars are digits
+                    if(strlen(tokenInput) > 6)
+                    {
+                        printf("Integer digit Overflow");
+                        return 0;
+                    }
+                    else if(strlen(tokenInput) == 6)// if the digit is 6 characters long
+                    {
+                        if(atoi(chop(tokenInput)) > MAX_INTEGER)// check if over max allowed value
+                        {
+                            printf("Integer Overflow");
+                            return 0;
+                        }
+                        else// is valid number
+                        {
+                            printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
+                            printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                        }
+
+
+
+                    }
                 }
+                else if(isalpha(tokenInput[0])) // if first character is a letter 
+                {
+                    int i;
+                    for(i = 0 ; i < strlen(tokenInput) -1; i++)
+                    {// for every character except the last
+                        if(!isalnum(tokenInput[i]))
+                        {// if the word contains a character after starting with a number
+                            printf("Invalid identifier %s", tokenInput);
+                            return 0;
+                        }
+                    }
+                    printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
+                }
+            else // if the last char is a letter
+            {
+
             }
         }
         else
@@ -210,6 +274,12 @@ TokenType FindTokenType( char* token)
   writesym = 31,    done
   readsym =  32,    done
   elsesym = 33      done*/
+
+
+// need to write code to do the comment handling 
+
+
+
   if(strlen(token) == 1)
   {// if the token is a single character 
     if(isdigit(token[0]))
@@ -344,6 +414,10 @@ TokenType FindTokenType( char* token)
         {
             return neqsym;
         }
+        else if(strcmp(token, "/*") == 0)
+        {
+            return 35;
+        }
         else
         {// non valid multiple character symbols
             printf("illegal token\n");
@@ -429,6 +503,18 @@ void ImportSourceCode(FILE * ifp)
     }
 }
 
+char* chop(char* raw)
+{
+    int length = strlen(raw);
+    char* string = (char*)malloc(sizeof(char) * (length -1) );
+    int i;
+    for(i = 0 ; i < length - 1 ; i++)
+    {
+        string[i] = raw[i];
+    }
+
+    return string;
+}
 
 //Instantiates the array of reserved words of the PL/0 Language
 void InitializeReservedWords()
