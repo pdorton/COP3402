@@ -496,7 +496,7 @@ TokenType FindTokenType( char* token)
         }
         else if(strcmp(token, ":=") == 0)
         {
-            becomessym;
+            return becomessym;
         }
         else if(strcmp(token, "<>") == 0)
         {
