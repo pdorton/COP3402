@@ -105,16 +105,19 @@ int main(int argc, char *argv[])
     char tokenInput[100];
     while(fscanf(ifp, "%s", tokenInput) != EOF)
     {
+    	
         if (strlen(tokenInput) < MAX_ID_LENGTH) //If the length of the token is within the limit of 12 chars plus one symbol at the end
         {
 
             if(strcmp(tokenInput, "/*") == 0) // if the beginning of a comment
-            {   
-                while(strcmp(tokenInput, "*/" != 0 ))// until the token reads in the end of comment symbol read through tokens 
+            {   //printf("got to comment section\n");
+                while(strcmp(tokenInput, "*/") != 0 )// until the token reads in the end of comment symbol read through tokens 
                 {
+                	//printf("read in %s\n", tokenInput);
                     fscanf(ifp, "%s", tokenInput);
                 }
-                fscanf(ifp, "%s", tokenInput);// load the next token after the closing comment 
+                
+                //printf("read in the whole comment and now %s is the token\n", tokenInput);
             }
             
             else if(!isalnum(tokenInput[strlen(tokenInput) -1 ] )) // if the last char is a special character
@@ -123,12 +126,21 @@ int main(int argc, char *argv[])
                 {
                     if(!isalnum(tokenInput[0]))//check if the first char is a special character
                     {// covers both 1 and 2 length special characters 
-                        FindTokenType(tokenInput);
+                        printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
                     }
                     else// tear them apart and send each then move to next token 
                     {
-                        printf("%c\t\t\t%d\n", tokenInput[0], (int)FindTokenType(tokenInput[0]));
-                        printf("%c\t\t\t%d\n", tokenInput[1], (int)FindTokenType(tokenInput[1]));
+                    	
+                    	char* buffer0[1];
+                        buffer0[0] = tokenInput[0];
+						//printf("buffer0 = %s", &buffer0);
+                    	char* buffer1[1];
+                    	buffer1[0] = tokenInput[1];
+                      
+
+                    	//printf("sending %s and %s   \n" , &buffer0 , &buffer1);
+                        printf("%s\t\t\t%d\n", buffer0, (int)FindTokenType(buffer0));
+                        printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(buffer1));
                     }
                 }
                 else if(isdigit(tokenInput[0]))// if the first char is a digit, then check all chars to see find a alpha
@@ -158,20 +170,27 @@ int main(int argc, char *argv[])
                         }
                         else// is valid number
                         {
+                        	char* buffer1[1];
+                    		buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
+                    	
                             printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                            printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                            printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                         }
                     }
                     else// if the token is not longer than 6 characters chop and print
                     {
+                    	char* buffer1[1];
+                    	buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                       printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                      printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                      printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                     }
                 }
                 else // if the length of the token  is longer than 2 and starts with an alpabet character then it will be a variable or keyword
                 {
+                	char* buffer1[1];
+                    	buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                     printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                    printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                    printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                 }
             }
                 else if(isdigit(tokenInput[strlen(tokenInput) -1]))// if last char is a digit
@@ -202,8 +221,10 @@ int main(int argc, char *argv[])
                             }
                             else// is valid number
                             {
+                            	char* buffer1[1];
+                    			buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                                 printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                                printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                                printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                             }
 
                         }
@@ -261,14 +282,18 @@ int main(int argc, char *argv[])
                             }
                             else// is valid number
                             {
+                            	char* buffer1[1];
+                    			buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                                 printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                                printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                                printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                             }
                         }
                         else// if the token is not longer than 6 characters chop and print
                         {
+                        	char* buffer1[1];
+                    		buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                         printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
-                        printf("%c\t\t\t%d\n", tokenInput[strlen(tokenInput) - 1], (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
+                        printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(tokenInput[strlen(tokenInput) - 1]));
                         }
                 }
             }
@@ -279,6 +304,7 @@ int main(int argc, char *argv[])
         }
         //printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
 
+		memset(tokenInput,0,sizeof(tokenInput));
     }// end of while loop
 
     return 0;
@@ -287,6 +313,15 @@ int main(int argc, char *argv[])
 // read in each token and find out what kind of valid token it is
 TokenType FindTokenType( char* token)
 {
+	if(strlen(token) == 1)
+	{
+		//printf("token = %s\n", token);
+	}
+	else
+	{
+		//printf("token = %s\n" , token);
+	}
+	
     /*nulsym = 1,   done
     identsym = 2,   done
     numbersym = 3,  done 
@@ -328,12 +363,14 @@ TokenType FindTokenType( char* token)
 
   if(strlen(token) == 1)
   {// if the token is a single character 
+  	//printf("token is a single char\n");
     if(isdigit(token[0]))
     {
         return numbersym;
     }
     else if(isalpha(token[0]))
     {
+    	//printf("%c is an alpla\n", token[0]);
         return identsym;
     }
     else
@@ -444,6 +481,7 @@ TokenType FindTokenType( char* token)
     }
     else if(!isalnum(token[0]))
     {// multiple character non alphanumeric symbols
+    
         if(strcmp(token, ">=") == 0)
         {
             return geqsym;
