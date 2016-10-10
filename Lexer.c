@@ -6,6 +6,13 @@ David Almeida
 Andrew Maida
 */
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include "tokens.h"
+
+/*
 typedef enum token {
   nulsym = 1, identsym = 2, numbersym = 3, plussym = 4, minussym = 5,
   multsym = 6, slashsym = 7, oddsym = 8, eqsym = 9, neqsym = 10, lessym = 11, leqsym = 12,
@@ -14,20 +21,13 @@ typedef enum token {
   whilesym = 25, dosym = 26, callsym = 27, constsym = 28, varsym = 29, procsym = 30, writesym = 31,
   readsym =  32, elsesym = 33
 } TokenType;
-
+*/
 typedef struct myToken
 {
     TokenType type;
     char string[14];
 }Token;
 
-
-
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-//#include "tokens.h"
 
 //PROTOTYPES
 void InitializeReservedWords();
@@ -105,38 +105,38 @@ int main(int argc, char *argv[])
     char tokenInput[100];
     while(fscanf(ifp, "%s", tokenInput) != EOF)
     {
-    	
+
         if (strlen(tokenInput) < MAX_ID_LENGTH) //If the length of the token is within the limit of 12 chars plus one symbol at the end
         {
 
             if(strcmp(tokenInput, "/*") == 0) // if the beginning of a comment
             {   //printf("got to comment section\n");
-                while(strcmp(tokenInput, "*/") != 0 )// until the token reads in the end of comment symbol read through tokens 
+                while(strcmp(tokenInput, "*/") != 0 )// until the token reads in the end of comment symbol read through tokens
                 {
                 	//printf("read in %s\n", tokenInput);
                     fscanf(ifp, "%s", tokenInput);
                 }
-                
+
                 //printf("read in the whole comment and now %s is the token\n", tokenInput);
             }
-            
+
             else if(!isalnum(tokenInput[strlen(tokenInput) -1 ] )) // if the last char is a special character
             {
                 if(strlen(tokenInput) < 3)// if the token is length 2 or lower
                 {
                     if(!isalnum(tokenInput[0]))//check if the first char is a special character
-                    {// covers both 1 and 2 length special characters 
+                    {// covers both 1 and 2 length special characters
                         printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
                     }
-                    else// tear them apart and send each then move to next token 
+                    else// tear them apart and send each then move to next token
                     {
-                    	
+
                     	char* buffer0[1];
                         buffer0[0] = tokenInput[0];
 						//printf("buffer0 = %s", &buffer0);
                     	char* buffer1[1];
                     	buffer1[0] = tokenInput[1];
-                      
+
 
                     	//printf("sending %s and %s   \n" , &buffer0 , &buffer1);
                         printf("%s\t\t\t%d\n", buffer0, (int)FindTokenType(buffer0));
@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
                     }
                 }
                 else if(isdigit(tokenInput[0]))// if the first char is a digit, then check all chars to see find a alpha
-                {   
-                	
+                {
+
                     int i;
                     for(i = 0 ; i < strlen(tokenInput) -1; i++)
                     {// for every character except the last
@@ -155,9 +155,9 @@ int main(int argc, char *argv[])
                             return 0;
                         }
                     }
-                    //all chars are digits 
-				
-                    if(strlen(tokenInput) > 7)//7 is to account for the special character as well as the length of the digit 
+                    //all chars are digits
+
+                    if(strlen(tokenInput) > 7)//7 is to account for the special character as well as the length of the digit
                     {
                         printf("Integer digit Overflow");
                         return 0;
@@ -171,17 +171,17 @@ int main(int argc, char *argv[])
                         }
                         else// is valid number
                         {
-                        	
+
                         	char* buffer1[1];
                     		buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
-                    	
+
                             printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
                             printf("%s\t\t\t%d\n", buffer1, (int)FindTokenType(buffer1));
                         }
                     }
                     else// if the token is not longer than 6 characters chop and print
                     {
-                    	
+
                     	char* buffer1[1];
                     	buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                       printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
                             }
                             else// is valid number
                             {
-                            	
+
                             	char* buffer1[1];
                     			buffer1[0] = tokenInput[strlen(tokenInput) - 1];// take the last char
                                 printf("%s\t\t\t%d\n", chop(tokenInput), (int)FindTokenType(chop(tokenInput)));
@@ -233,16 +233,16 @@ int main(int argc, char *argv[])
 
                         }
                     }
-                    else if(isalpha(tokenInput[0])) // if first character is a letter 
-                    {// then it is a identitier 
-                        
+                    else if(isalpha(tokenInput[0])) // if first character is a letter
+                    {// then it is a identitier
+
                         printf("%s\t\t\t%d\n", tokenInput, (int)FindTokenType(tokenInput));
                     }
-                    
+
                 }
-                else if(isalpha(tokenInput[strlen(tokenInput) -1 ] ))// if the last character is a char then it is either a ident or a keyword 
+                else if(isalpha(tokenInput[strlen(tokenInput) -1 ] ))// if the last character is a char then it is either a ident or a keyword
                 {
-                    if(isdigit(tokenInput[0]))// then invalid ident 
+                    if(isdigit(tokenInput[0]))// then invalid ident
                     {
                         printf("Invalid identifier %s", tokenInput);
                         return 0;
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
                                 return 0;
                             }
                         }
-                        //all chars are digits 
+                        //all chars are digits
 
                         if(strlen(tokenInput) > 6)
                         {
@@ -325,10 +325,10 @@ TokenType FindTokenType( char* token)
 	{
 		//printf("token = %s\n" , token);
 	}
-	
+
     /*nulsym = 1,   done
     identsym = 2,   done
-    numbersym = 3,  done 
+    numbersym = 3,  done
     plussym = 4,    done
     minussym = 5,   done
   multsym = 6,      done
@@ -361,12 +361,12 @@ TokenType FindTokenType( char* token)
   elsesym = 33      done*/
 
 
-// need to write code to do the comment handling 
+// need to write code to do the comment handling
 
 
 
   if(strlen(token) == 1)
-  {// if the token is a single character 
+  {// if the token is a single character
   	//printf("token is a single char\n");
     if(isdigit(token[0]))
     {
@@ -485,14 +485,14 @@ TokenType FindTokenType( char* token)
     }
     else if(!isalnum(token[0]))
     {// multiple character non alphanumeric symbols
-    
+
         if(strcmp(token, ">=") == 0)
         {
             return geqsym;
         }
         else if(strcmp(token, "<=") == 0)
         {
-            return leqsym;         
+            return leqsym;
         }
         else if(strcmp(token, ":=") == 0)
         {
@@ -507,8 +507,8 @@ TokenType FindTokenType( char* token)
             printf("illegal token\n");
             return nulsym;
         }
-            
-        
+
+
     }
     else
     {
