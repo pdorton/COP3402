@@ -1,4 +1,5 @@
 #include <stdio.h>
+<<<<<<< HEAD
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,10 +43,25 @@ int main()
 
 
 
+=======
+#include "tokens.h"
+
+TokenType tok;
+
+//Function Prototypes
+void Statement();
+void Condition();
+void Expression();
+
+
+int main()
+{
+>>>>>>> 9a0ef94a4dd17ba22f073cb5300bbfe560258381
 	return 0;
 }
 
 
+<<<<<<< HEAD
 void term()
 {
 	Factor();
@@ -75,3 +91,101 @@ void factor()
 	else
 		return; //error needs to be handled here
 }
+=======
+void Statement()
+{
+    if (tok == identsym)
+    {
+        //tok = get();
+        if (tok != becomessym)
+        {
+            //error: printf("Assignment operator expected");
+            return;
+        }
+        //tok = get();
+        //Expression();
+    }
+    else if (tok == callsym)
+    {
+        //tok = get();
+        if (tok != identsym)
+        {
+            //error: printf("call must be followed by an identifier.");
+            return;
+        }
+        //tok = get();
+    }
+    else if (tok == beginsym)
+    {
+        //tok = get();
+        Statement();
+        while (tok == semicolonsym)
+        {
+            //tok = get();
+            Statement();
+        }
+        if (tok != endsym)
+        {
+            //error: printf("Period expected");
+            return;
+        }
+        //tok = get();
+    }
+    else if (tok == ifsym)
+    {
+        //tok = get();
+        //Condition();
+        if (tok != thensym)
+        {
+            //error: printf("then expected.");
+            return;
+        }
+        //tok = get();
+        Statement();
+    }
+    else if (tok == whilesym)
+    {
+        //tok = get();
+        //Condition();
+        if (tok != dosym)
+        {
+            //error: printf("do expected.");
+            return;
+        }
+        //tok = get();
+        Statement();
+    }
+}
+
+void Condition()
+{
+    if (tok = oddsym)
+    {
+        tok = Get();
+        Expression();
+    }
+    else
+    {
+        Expression();
+
+        //is it <, >, =, etc.
+        //add this later
+        if(tok != Relation)
+            Error();
+
+        tok = get();
+        Expression();
+    }
+}
+
+void Expression()
+{
+    if(tok = plussym || tok = minussym)
+        Term();
+    while(tok = plussym || tok = minussym)
+    {
+        tok = Get();
+        Term();
+    }
+}
+>>>>>>> 9a0ef94a4dd17ba22f073cb5300bbfe560258381
