@@ -1,5 +1,4 @@
 #include <stdio.h>
-<<<<<<< HEAD
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +42,7 @@ int main()
 
 
 
-=======
+
 #include "tokens.h"
 
 TokenType tok;
@@ -56,12 +55,9 @@ void Expression();
 
 int main()
 {
->>>>>>> 9a0ef94a4dd17ba22f073cb5300bbfe560258381
 	return 0;
 }
 
-
-<<<<<<< HEAD
 void term()
 {
 	Factor();
@@ -91,7 +87,7 @@ void factor()
 	else
 		return; //error needs to be handled here
 }
-=======
+	
 void Statement()
 {
     if (tok == identsym)
@@ -188,4 +184,3 @@ void Expression()
         Term();
     }
 }
->>>>>>> 9a0ef94a4dd17ba22f073cb5300bbfe560258381
