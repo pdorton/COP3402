@@ -3,11 +3,14 @@
 
 TokenType tok;
 
-int main(){
+//Function Prototypes
+void Statement();
+void Condition();
+void Expression();
 
 
-
-
+int main()
+{
 	return 0;
 }
 
