@@ -1,0 +1,17 @@
+Michael Garro
+-Wrote Statement function
+
+Patrick Dorton
+-Wrote Program function
+-Wrote Block function
+-Wrote get function
+
+Andrew Maida 
+-Wrote Condition function
+-Wrote Expression function
+
+David Almeida 
+-Wrote symboltanle struct
+-Wrote Instructions struct
+-Wrote Term function
+-Wrote Factor function
