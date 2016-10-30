@@ -65,6 +65,96 @@ int main()
 }
 
 	
+
+
+
+void Program()
+{
+
+ 	tok = Get();
+ 	Block();
+ 	if (tok != periodsym)
+ 	{
+ 		printf("Period expected");
+ 		return;
+ 	}
+ 		
+
+} 
+
+void Block()
+{
+ 	if (tok == constsym)
+ 	{
+ 			/*	
+				Const x = 9, y = x;	
+				while not a semicolon 
+				check for ident then = then numbers
+ 						*/
+			tok = get(tok);// get the first token after the const 
+ 			while(tok != semicolomsym)
+ 			{
+ 				
+ 				if (tok != identsym)
+ 				{// if first token is not ident then throw error 
+ 					printf("const, var, procedure must be followed by identifier");
+ 					return;
+ 				}
+ 				else
+ 				{// bring in the next token
+ 					tok = get(tok);
+ 				}
+ 				
+ 				
+ 				if (tok != eqsym)
+ 				{// if token isn't an "="
+ 					printf("Identifier must be followed by =");
+ 					return;
+ 				}
+ 				else
+ 				{
+
+ 				}
+ 				tok = get(tok);
+ 				else if (tok != numsym ) ERROR;
+ 				tok = get(tok);
+
+ 				//until tok != "commasym";
+ 				if tok != semicolomsym then ERROR;
+ 				tok = get(tok);
+ 			
+ 			
+ 		}
+ 	if tok == varsym then 
+ 		{
+
+ 			repeat
+ 			tok = get(tok);
+ 			if tok != identsym then ERROR;
+ 			tok = get(tok);
+ 			until tok != commasym;
+ 			if tok != semicolomsym then ERROR;
+ 			tok = get(tok);
+ 		}
+ 	while tok == procsym do 
+ 		{
+ 			tok = get(tok);
+ 			if tok != identsym then ERROR;
+ 			tok = get(tok);
+ 			if tok != semicolomsym then ERROR;
+ 			tok = get(tok);
+ 			BLOCK;
+ 			if tok != semicolomsym then ERROR;
+ 			tok = get(tok);
+ 		}
+ 		STATEMENT
+ 		
+}
+
+
+
+
+
 void Statement()
 {
     if (tok == identsym)
