@@ -76,3 +76,35 @@ void Statement()
         Statement();
     }
 }
+
+void Condition()
+{
+    if (tok = oddsym)
+    {
+        tok = Get();
+        Expression();
+    }
+    else
+    {
+        Expression();
+
+        //is it <, >, =, etc.
+        //add this later
+        if(tok != Relation)
+            Error();
+
+        tok = get();
+        Expression();
+    }
+}
+
+void Expression()
+{
+    if(tok = plussym || tok = minussym)
+        Term();
+    while(tok = plussym || tok = minussym)
+    {
+        tok = Get();
+        Term();
+    }
+}
