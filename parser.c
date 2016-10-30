@@ -114,7 +114,7 @@ void Statement()
 
 void Condition()
 {
-    if (tok = oddsym)
+    if (tok == oddsym)
     {
         tok = Get();
         Expression();
@@ -135,9 +135,9 @@ void Condition()
 
 void Expression()
 {
-    if(tok = plussym || tok = minussym)
+    if(tok == plussym || tok == minussym)
         Term();
-    while(tok = plussym || tok = minussym)
+    while(tok == plussym || tok == minussym)
     {
         tok = Get();
         Term();
@@ -150,8 +150,8 @@ void Term()
 	Factor();
 	while(tok == "multsym" || tok == "slashsym")
 	{
-		get(tok);
-		factor();
+		tok = get();
+		Factor();
 	}
 	return;
 }
@@ -160,16 +160,16 @@ void Term()
 void Factor()
 {
 	if(tok == "identsym")
-		get(tok);
+		tok = get();
 	else if(tok == number)
-		get(tok);
+		tok = get();
 	else if(tok == "(")
 	{
-		get(tok);
-		expression();
+		tok = get();
+		Expression();
 		if(tok != ")")
 			return; // error here, need to see how this is handled
-		get(tok); // part of nested if? or part of last else if?
+		tok = get(); // part of nested if? or part of last else if?
 	}
 	else
 		return; //error needs to be handled here
