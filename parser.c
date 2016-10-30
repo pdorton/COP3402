@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tokens.h"
 
 #define MAX_SYMBOL_TABLE_SIZE 100
 #define MAX_CODE_SIZE 500
@@ -26,31 +27,18 @@ typedef struct
 
 //current_instruction instructions[MAX_CODE_SIZE]; 	// data structure for instructions and code generation
 
-
-
-
-
-
-
-
-int main()
-{
-
-	printf("i am the parser");
-	printf("the ai compiler accepts, make it so");
-
-
-
-
-
-#include "tokens.h"
-
 TokenType tok;
+
+
+
 
 //Function Prototypes
 void Statement();
 void Condition();
 void Expression();
+void Term();
+void Factor();
+
 
 
 int main()
@@ -58,35 +46,6 @@ int main()
 	return 0;
 }
 
-void term()
-{
-	Factor();
-	while(tok == "multsym" || tok == "slashsym")
-	{
-		get(tok);
-		factor();
-	}
-	return;
-}
-
-
-void factor()
-{
-	if(tok == "identsym")
-		get(tok);
-	else if(tok == number)
-		get(tok);
-	else if(tok == "(")
-	{
-		get(tok);
-		expression();
-		if(tok != ")")
-			return; // error here, need to see how this is handled
-		get(tok); // part of nested if? or part of last else if?
-	}
-	else
-		return; //error needs to be handled here
-}
 	
 void Statement()
 {
@@ -183,4 +142,35 @@ void Expression()
         tok = Get();
         Term();
     }
+}
+
+
+void Term()
+{
+	Factor();
+	while(tok == "multsym" || tok == "slashsym")
+	{
+		get(tok);
+		factor();
+	}
+	return;
+}
+
+
+void Factor()
+{
+	if(tok == "identsym")
+		get(tok);
+	else if(tok == number)
+		get(tok);
+	else if(tok == "(")
+	{
+		get(tok);
+		expression();
+		if(tok != ")")
+			return; // error here, need to see how this is handled
+		get(tok); // part of nested if? or part of last else if?
+	}
+	else
+		return; //error needs to be handled here
 }
