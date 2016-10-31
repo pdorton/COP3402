@@ -140,8 +140,9 @@ void Block()
  				tok = Get();
  			}
  		
- 		}// end of const
- 	if tok == varsym then 
+ 		}// end of while
+ 	}// end of const
+ 		if (tok == varsym)
  		{//var-declaration: := [ “var” ident { “,” ident } “;” ] .
  			tok = Get();
  			while( tok != semicolonsym)
@@ -174,20 +175,41 @@ void Block()
  			}
  			
  		}// end of var 
- 	while tok == procsym do 
- 		{
+ 	while (tok == procsym) 
+ 	{//<proc-declaration> ::= { “procedure” <ident> “;” <block> “;” } 
+ 			tok = get(tok); // pull in token
+ 			if (tok != identsym)
+ 			{
+ 				printf("const, var, procedure must be followed by identifier");
+ 				return;
+ 			} 
+ 			else
+ 			{// if pulled in ident
+ 				tok = get(tok);
+ 			}
+ 			
+ 			if (tok != semicolomsym)
+ 			{// missing a semicolon
+ 				printf("Semicolon or } expected.");
+ 				return;
+ 			} 
+
  			tok = get(tok);
- 			if tok != identsym then ERROR;
- 			tok = get(tok);
- 			if tok != semicolomsym then ERROR;
- 			tok = get(tok);
- 			BLOCK;
- 			if tok != semicolomsym then ERROR;
- 			tok = get(tok);
- 		}
- 		STATEMENT
+ 			Block();
+ 			if (tok != semicolomsym)
+ 			{
+ 				printf("Semicolon or } expected.");
+ 				return;
+ 			}
+ 			else
+ 			{// procedure complete take in next token
+				tok = get(tok);
+ 			}
+ 			
+ 	}// end of procedures 
+ 		Statement();
  		
-}
+
 
 
 
