@@ -75,7 +75,7 @@ void Program()
  	Block();
  	if (tok != periodsym)
  	{
- 		printf("Period expected");
+ 		printf("Error: Period expected");
  		return;
  	}
  		
@@ -86,44 +86,63 @@ void Block()
 {
  	if (tok == constsym)
  	{
- 			/*	
-				Const x = 9, y = x;	
-				while not a semicolon 
-				check for ident then = then numbers
- 						*/
-			tok = get(tok);// get the first token after the const 
- 			while(tok != semicolomsym)
- 			{
- 				
- 				if (tok != identsym)
- 				{// if first token is not ident then throw error 
- 					printf("const, var, procedure must be followed by identifier");
- 					return;
- 				}
- 				else
- 				{// bring in the next token
- 					tok = get(tok);
- 				}
- 				
- 				
- 				if (tok != eqsym)
- 				{// if token isn't an "="
- 					printf("Identifier must be followed by =");
- 					return;
- 				}
- 				else
- 				{
-
- 				}
+		tok = get(tok);// get the first token after the const 
+ 		while(tok != semicolomsym)
+ 		{
+ 			
+ 			if (tok != identsym)
+ 			{// if first token is not ident then throw error 
+ 				printf("const, var, procedure must be followed by identifier");
+ 				return;
+ 			}
+ 			else
+ 			{// bring in the next token
  				tok = get(tok);
- 				else if (tok != numsym ) ERROR;
- 				tok = get(tok);
-
- 				//until tok != "commasym";
- 				if tok != semicolomsym then ERROR;
- 				tok = get(tok);
+ 			}
  			
  			
+ 			if (tok != eqsym)
+ 			{// if token isn't an "="
+ 				printf("Error: Identifier must be followed by =");
+ 				return;
+ 			}
+ 			else
+ 			{// read in an " = ", get next token
+ 				tok = get(tok);
+ 			}
+ 			
+ 			if (tok != numsym )
+ 			{// if not reading in a number, throw error
+ 				printf("= must be followed by a number.");
+ 				return;
+ 			}
+ 			else
+ 			{// pull in token
+ 				tok = get(tok);
+ 			} 
+
+ 			
+
+
+ 			//until tok != "commasym";
+ 			if (tok != commasym)
+ 			{// if the token is not a comma
+ 				if(tok != semicolomsym)
+ 				{// if it is not a semicolon then error 
+ 					printf("Semicolon or comma missing.");
+ 				}
+ 				else
+ 				{// if it is a semicolon then move on the the next token
+ 					tok = Get();
+ 				}
+ 			}
+ 			else
+ 			{// if comma then get new token and loop
+ 				tok = Get();
+ 			}
+ 			
+ 		
+ 		
  		}
  	if tok == varsym then 
  		{
