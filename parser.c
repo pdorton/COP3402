@@ -83,9 +83,12 @@ void Program()
 } 
 
 void Block()
-{
+{ // block:	:= const-declaration var-declaration statement
+  
+ 
  	if (tok == constsym)
- 	{
+ 	{// const-declaration: := [ “const” ident “=” number {“,” ident “=” number} “;”].
+
 		tok = get(tok);// get the first token after the const 
  		while(tok != semicolomsym)
  		{
@@ -121,10 +124,6 @@ void Block()
  				tok = get(tok);
  			} 
 
- 			
-
-
- 			//until tok != "commasym";
  			if (tok != commasym)
  			{// if the token is not a comma
  				if(tok != semicolomsym)
@@ -140,21 +139,41 @@ void Block()
  			{// if comma then get new token and loop
  				tok = Get();
  			}
- 			
  		
- 		
- 		}
+ 		}// end of const
  	if tok == varsym then 
- 		{
-
- 			repeat
- 			tok = get(tok);
- 			if tok != identsym then ERROR;
- 			tok = get(tok);
- 			until tok != commasym;
- 			if tok != semicolomsym then ERROR;
- 			tok = get(tok);
- 		}
+ 		{//var-declaration: := [ “var” ident { “,” ident } “;” ] .
+ 			tok = Get();
+ 			while( tok != semicolonsym)
+ 			{
+ 					if (tok != identsym)
+ 					{// if first token is not ident then throw error 
+ 						printf("const, var, procedure must be followed by identifier");
+ 						return;
+ 					}
+ 					else
+ 					{// bring in the next token
+ 						tok = get(tok);
+ 					}
+	
+ 				if (tok != commasym)
+ 				{// if the token is not a comma
+ 					if(tok != semicolomsym)
+ 					{// if it is not a semicolon then error 
+ 						printf("Semicolon or comma missing.");
+ 					}
+ 					else
+ 					{// if it is a semicolon then move on the the next token
+ 						tok = Get();
+ 					}
+ 				}
+ 				else
+ 				{// if it is a comma then loop
+ 					tok = Get();
+ 				}
+ 			}
+ 			
+ 		}// end of var 
  	while tok == procsym do 
  		{
  			tok = get(tok);
