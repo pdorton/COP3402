@@ -1,3 +1,14 @@
+/*Contributors:
+David Almeida
+Micheal Garro
+Andrew Maida
+Patrick Dorton
+*/
+
+// parser assignment due nov 10
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +27,7 @@ typedef struct symbol
 	int adr;			// M address
 }	symbol;
 
-//symbol symbol_table[MAX_SYMBOL_TABLE_SIZE]; // currently here cause on slide, not syet used in program
+//
 
 typedef struct 
 {
@@ -25,11 +36,16 @@ typedef struct
 	int m;	// modifier
 }current_intstuction;
 
-//current_instruction instructions[MAX_CODE_SIZE]; 	// data structure for instructions and code generation
+//
 
 TokenType tok;
-
-
+current_instruction instructions[MAX_CODE_SIZE];    // data structure for instructions and code generation
+symbol symbol_table[MAX_SYMBOL_TABLE_SIZE]; // currently here cause on slide, not syet used in program
+int pc = 0;
+int var = 0;
+int currentLevel = 0;
+int totalSymbol = 0;
+int error = 0; // gets changed to 1 if error encountered
 
 
 //Function Prototypes
@@ -38,6 +54,8 @@ void Condition();
 void Expression();
 void Term();
 void Factor();
+void emit();
+void error();
 
 
 
@@ -144,33 +162,82 @@ void Expression()
     }
 }
 
+// david is working on error handling for his two functions
 
+// function desgined to catch term errors
 void Term()
 {
 	Factor();
-	while(tok == "multsym" || tok == "slashsym")
+	while(strcmp(tok, "6") == 0 || strcmp(tok, "7") == 0)  //(tok == "multsym" || tok == "slashsym")
 	{
+        char temp[12];
+        strcpy(temp, tok);
 		tok = get();
 		Factor();
+
+        if(strcmp(temp, "6") == 0)
+            emit(2, 0, 4);
+        else
+            emit(2, 0, 5)
+
 	}
-	return;
-}
+}// function should be mostly complete
 
-
+// functinn desgined to catch factor errors
 void Factor()
 {
-	if(tok == "identsym")
+    int sym_index = 0:
+	if(strcmp(tok, "2") == 0)  //(tok == "identsym")
+    { 
 		tok = get();
-	else if(tok == number)
-		tok = get();
-	else if(tok == "(")
+        sym_index = searchSymbolTable(tok);
+
+        if(sym_index == -1)
+            error("undeclared identifier.\n");
+
+        if(symbol_table[sym_index] == 1)
+            emit(1, 0, symbol_table[sym_index].val);
+
+        else if (symbol_table[sym_index] == 2)
+            emit(1,0,symbol_table[sym_index].val);
+        else
+            error("Expression mus not contain a procedure identifier.\n");
+        tok = get();
+    }
+	else if(strcmp(tok, "3") == 0) //(tok == number)
+	{
+        tok = get();
+        int num = atoi(tok);
+        emit(1, 0, num);
+        tok = get();
+    }
+
+	else if(strcmp(tok, "15") == 0)//(tok == "(")
 	{
 		tok = get();
 		Expression();
-		if(tok != ")")
-			return; // error here, need to see how this is handled
+		if(strcmp(tok, "16") != 0)//(tok != ")")
+            error("Right Parenthesis Missing.\n");
 		tok = get(); // part of nested if? or part of last else if?
 	}
 	else
-		return; //error needs to be handled here
+		error("An exppression cannot begin with this symbol.\n"); //error needs to be handled here
+}
+
+void emit(int op, int level, int modifier)
+{
+    if(pc >= MAX_CODE_SIZE)
+        error("Generated code exceeds max code size.\n");
+
+    instructions[pc].op = op;
+    instructions[pc].l = level;
+    instructions[pc].m = modifier;
+    pc++;
+}
+
+void error(char* s) // prints error and exit parser
+{
+    errorDetect = 1; // an error was encountered
+    fprintf(output, "\nError: %s\n", s);
+    printf("\nError: %s\n", s);
 }
