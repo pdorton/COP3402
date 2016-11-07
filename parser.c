@@ -49,6 +49,8 @@ int error = 0; // gets changed to 1 if error encountered
 
 
 //Function Prototypes
+void Program();
+void Block();
 void Statement();
 void Condition();
 void Expression();
@@ -208,7 +210,7 @@ void Block()
  			
  	}// end of procedures 
  		Statement();
- 		
+ }		
 
 
 
@@ -390,4 +392,14 @@ void error(char* s) // prints error and exit parser
     errorDetect = 1; // an error was encountered
     fprintf(output, "\nError: %s\n", s);
     printf("\nError: %s\n", s);
+}
+
+TokenType Get()
+{
+    
+
+
+
+
+    
 }
