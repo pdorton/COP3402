@@ -1,5 +1,5 @@
-var x, y;
+var a, b;
 begin
-  x := 3;       /* This is := a % comment. */ x := 4;
-  x := y + 56;
-end.
+	a := 88;
+	b := 99;
+end .

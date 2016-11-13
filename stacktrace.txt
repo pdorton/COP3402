@@ -1,0 +1,19 @@
+line	OP	R	L	M
+0	JMP	0	0	1	
+1	INC	0	0	6	
+2	LIT	0	0	88	
+3	STO	0	0	4	
+4	LIT	0	0	99	
+5	STO	0	0	5	
+6	RTN	0	0	0	
+7	SIO	0	0	3	
+
+					PC	BP	SP	stack 
+Initial values 				0	1	0	0
+0	JMP	0	0	1	1	1	0	0 
+1	INC	0	0	6	2	1	6	0 0 0 0 0 0 0 
+2	LIT	0	0	88	3	1	6	0 0 0 0 0 0 0 
+3	STO	0	0	4	4	1	6	0 0 0 0 0 88 0 
+4	LIT	0	0	99	5	1	6	0 0 0 0 0 88 0 
+5	STO	0	0	5	6	1	6	0 0 0 0 0 88 99 
+6	RTN	0	0	0	0	0	0	0 

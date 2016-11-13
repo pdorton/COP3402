@@ -1,0 +1,35 @@
+Source Program:
+var a, b;
+begin
+	a := 88;
+	b := 99;
+end .
+
+Lexeme Table:
+lexeme		token type
+var		29
+a		2
+,		17
+b		2
+;		18
+begin		21
+a		2
+:=		20
+88		3
+;		18
+b		2
+:=		20
+99		3
+;		18
+end		22
+.		19
+
+Symbol Table:
+index		symbol
+0		a 
+1		b 
+2		88 
+3		99 
+
+Lexeme List:
+29 2 0 17 2 1 18 21 2 0 20 3 2 18 2 1 20 3 3 18 22 19 
