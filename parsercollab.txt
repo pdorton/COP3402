@@ -1,5 +1,6 @@
 Michael Garro
 -Wrote Statement function
+/*need you to go through the code and figure out where it is pulling in the input.txt file and make all references to that be from the input commandline argument */
 
 Patrick Dorton
 -Wrote Program function
@@ -7,12 +8,20 @@ Patrick Dorton
 -Wrote get function
 -Wrote PushSymbol function
 
+/*I will continue going through the code and commenting it out as I can to make it easier to follow for further assignments*/
+
+
 Andrew Maida 
 -Wrote Condition function
 -Wrote Expression function
+/* need you to go to the code print function and make it print to a file that is given as the second command line argument*/
+
+
 
 David Almeida 
 -Wrote symboltable struct
 -Wrote Instructions struct
 -Wrote Term function
 -Wrote Factor function
+
+/*can you go through the functions and figure out why it is having the 7 0 0 1 and the differences in the halt from the professors examples*/
