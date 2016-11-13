@@ -15,17 +15,19 @@ Patrick Dorton
 #include "tokens.h"
 
 #define MAX_SYMBOL_TABLE_SIZE 100
+#define MAX_IDENTIFIER_LENGTH 11
+#define MAX_NUMBER_LENGTH 5
 #define MAX_CODE_SIZE 500
 
 /*Symbol Data Structure table*/
 typedef struct symbol 
 {
 	int kind;			// const = 1, var = 2, proc = 3
-	char name[1];		// name up to 11 characters
+	char name[12];		// name up to 11 characters
 	int val;			// number (ACSII Value)
 	int level;			// L level
-	int adr;			// M address
-}	symbol;
+	int addr;			// M address
+}	Symbol;
 
 //
 
@@ -34,18 +36,49 @@ typedef struct
 	int op; //opcode
 	int l;	// level
 	int m;	// modifier
-}current_intstuction;
+}Intstuction;
 
 //
 
-enum token{nulsym = 1, identsym = 2, numbersym = 3, plussym = 4, minussym = 5, multsym = 6,
-slashsym = 7, oddsym = 8, eqlsym = 9, neqsym = 10, lessym = 11, leqsym = 12,
-gtrsym = 13, geqsym = 14, lparentsym = 15, rparentsym = 16, commasym = 17,
-semicolonsym = 18, periodsym = 19, becomessym = 20, beginsym = 21, endsym = 22,
-ifsym = 23, thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28,
-intsym = 29, procsym = 30, outsym = 31, insym = 32, elsesym = 33};
+typedef enum 
+{// wrote out all the numbers for debug purposes
+    nulsym = 1,
+    identsym = 2,
+    numbersym = 3,
+    plussym = 4,
+    minussym = 5,
+    multsym = 6,
+    slashsym = 7,
+    oddsym = 8,
+    eqlsym = 9,
+    neqsym = 10,
+    lessym = 11,
+    leqsym = 12,
+    gtrsym = 13,
+    geqsym = 14,
+    lparentsym = 15,
+    rparentsym = 16,
+    commasym = 17,
+    semicolonsym = 18,
+    periodsym = 19,
+    becomessym = 20,
+    beginsym = 21,
+    endsym = 22,
+    ifsym = 23,
+    thensym = 24,
+    whilesym = 25,
+    dosym = 26,
+    callsym = 27,
+    constsym = 28,
+    intsym = 29,
+    procsym = 30,
+    outsym = 31,
+    insym = 32,
+    elsesym = 33
+}TokenType;
 
-enum opcode{
+typedef enum 
+{
   lit = 1,
   opr = 2,
   lod = 3,
@@ -56,7 +89,21 @@ enum opcode{
   jpc = 8,
   sio = 9,
   sio2 = 10
-};
+}OpCode;
+
+typedef enum
+{
+    constant =1,
+    variable = 2,
+    procedure = 3
+} SymbolKind;
+
+typedef struct node
+{
+    int token;
+    struct node* next;
+} Node;
+
 
 TokenType tok;
 current_instruction instructions[MAX_CODE_SIZE];    // data structure for instructions and code generation
@@ -66,6 +113,19 @@ int var = 0;
 int currentLevel = 0;
 int totalSymbol = 0;
 int error = 0; // gets changed to 1 if error encountered
+
+
+// Global variables
+int currentToken;
+int curReg;
+symbol symbolList[50];
+symbol symbolTable[100];
+int stIndex;
+int codeLine;
+instruction code[CODE_SIZE];
+int printSuccess;
+int level;
+
 
 
 //Function Prototypes
