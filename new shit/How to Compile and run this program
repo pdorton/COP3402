@@ -1,0 +1,23 @@
+How to Compile and run this program
+
+
+get into eustis and navigate to the folder where all of the files are uploaded 
+
+
+
+enter this command to compile it 
+>> gcc -o <whatever the fuck you want to name it> vm.c lex.c parser.c main.c 
+
+assuming that we named it compiled
+>> gcc -o compiled vm.c lex.c parser.c main.c 
+
+after it compiles then you run cases as such 
+
+>> ./compiled <input file name> <output file name>
+
+it will run and in doing so generate some extra text files it uses to push things through one program to the next. 
+
+this is going to read in the raw code,
+put it through the lexer,
+push the lexemes to the parser to be made into code, 
+later on I will work on getting that code to run and do the stuff it is supposed to but that is for the next assignment.
