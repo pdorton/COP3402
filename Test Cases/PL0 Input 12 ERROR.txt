@@ -1,0 +1,14 @@
+var a, b, c;
+begin
+	a := 1;
+	b := 3;
+	if a > b then
+		c := a + b;
+	else if b > a then
+		c := b;
+	else
+		c := a;
+
+	while a < c
+		a := a + 1;
+end.  

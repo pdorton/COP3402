@@ -1,0 +1,16 @@
+1. Identifier starts with number
+2. NO ERROR
+3. Integer too large
+4. 'if' without a 'then'
+5. '=' used instead of ':='
+6. 'end' without '.'
+7. expected ';'
+8. 'else' with no leading 'if'
+9. 'begin' expected
+10. 'var' expected
+11. NO ERRORS
+12. 'while' without 'do'
+13. expected condition between 'while' and 'do'
+14. expected condition between 'if' and 'then'
+15. expected relational operator in condition
+16. identifier too long
