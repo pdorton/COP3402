@@ -1,17 +1,9 @@
 /*
- William Jeremy RiCharde
- COP 3402 - Systems Software
- Assignment 4 - Final PL/0 Compiler
- Due July 23, 2014
-
- This program runs the other programs to make a complete driver for Tiny PL/0
- Please see the readme.txt for compile instructions for the Scanner, Parser/Code
- Generator, and the Virtual Machine for this program to run correctly.
- 
- Handles 3 directives to print additional info to screen from these programs.
- "-a" prints the generated assembly code from the Parser/Code Generator
- "-l" prints the lexeme list and symbol table from the Scanner to the screen
- "-v" prints the virtual machine execution trace to the screen
+Compiler Builder Group 30
+Patrick Dorton
+David Almeida
+Andrew Maida
+Michael Garro
  */
 
 
