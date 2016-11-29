@@ -271,7 +271,7 @@ void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table)
             }
             else if (table[i].kind==3) 
             {//proc
-                emit(5,lev-table[i].level, table[i].addr, code); // 5 is CAL for op, lev-table[i].level is for L, table[i].adr for M
+                emit(5,lev-table[i].level, table[i].addr - 1, code); // 5 is CAL for op, lev-table[i].level is for L, table[i].adr for M
                 //statement::= ["call" ident | ...]
             }
             else 
@@ -365,7 +365,7 @@ void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table)
     {
         token = getNextToken(ifp);
         expression(lev, ptx, ifp, code, table);
-        emit(9,0,1, code); // 9 is SIO1 for op, 0 is for L and 1 for M, write the top stack element to the screen
+        emit(9,0,0, code); // 9 is SIO1 for op, 0 is for L and 1 for M, write the top stack element to the screen
     }
     
     //read needs to read and STO
