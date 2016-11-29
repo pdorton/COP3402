@@ -1,1102 +1,771 @@
-/*
- William Jeremy RiCharde
- COP 3402 - Systems Software
- Assignment 4 - Final PL/0 Compiler
- Due July 23, 2014
-
- */
-
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include "data.h"
 
-#define MAX_SYMBOL_TABLE_SIZE 100
-#define MAX_IDENTIFIER_LENGTH 11
-#define MAX_NUMBER_LENGTH 5
-#define CODE_SIZE 2000
-
-// a struct to store the symbol information
-typedef struct
-{
-    int kind;           // const = 1, var = 2, procedure = 3
-    char name[12];      // name of identifier
-    int val;            // value for constants / numbers
-    int level;          // L level
-    int addr;           // M address
+//Recommended data structure for the symbol.
+typedef struct {
+	int kind; 		// const = 1, var = 2, proc = 3
+	char name[12];	// name up to 11 chars
+	int val; 		// number (ASCII value)
+	int level; 		// L level
+	int addr; 		// M address
 } symbol;
 
+/*For constants, you must store kind, name and value.
+ For variables, you must store kind, name, L and M.
+ For procedures, you must store kind, name, L and M.*/
 
-// create a enum for the token types
-typedef enum
+//functions
+void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code);
+void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table);
+void vardeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table);
+void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table);
+void condition(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table);
+void expression(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table);
+void term(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table);
+void factor(int lev, int *ptx, symbol* table, FILE* ifp, instruction* code);
+void emit(int op, int l, int m, instruction* code);
+void enter(int k, int *ptx, int *pdx, int lev, symbol* table);
+void error(int errorCase);
+int getNextToken(FILE* ifp);
+int position(char *id, int *ptx, symbol* table, int lev);
+void program(FILE* ifp, symbol* table, instruction* code);
+
+
+//Globals Defined
+int cx, token, num, kind, lexemeListIndex=0, errorCount=0, difference, previousDifference=0;
+char id[12];
+
+void parse(void) 
 {
-    nulsym = 1, identSym, numberSym, plusSym, minusSym,
-    multSym,  slashSym, oddSym, eqSym, neqSym, lesSym, leqSym,
-    gtrSym, geqSym, lparentSym, rparentSym, commaSym, semicolonSym,
-    periodSym, becomesSym, beginSym, endSym, ifSym, thenSym,
-    whileSym, doSym, callSym, constSym, varSym, procSym, writeSym,
-    readSym , elseSym
-} token_type;
+
+    //Declaring file pointers
+    FILE* ifp;
+    FILE* ofp;
 
 
-typedef enum
-{
-    LIT = 1, RTN, LOD, STO, CAL, INC, JMP, JPC, SIO1, SIO2, SIO3,
-    NEG, ADD, SUB, MUL, DIV, ODD, MOD, EQL, NEQ, LSS, LEQ, GTR, GEQ
-} op_code;
-
-
-// kind of identifier
-typedef enum
-{
-    constant = 1,
-    variable,
-    procedure
-} symbol_kind;
-
-
-// a node that represents a single token from the code
-typedef struct node
-{
-    // a variable, number or symbol in the code
-    int token;
+   ifp = fopen("lexoutput.txt", "r");
+   ofp = fopen("parserout.txt", "w");
     
-    // a pointer to the next word in the code
-    struct node *next;
-    
-} node;
-
-// represents a line of code
-typedef struct
-{
-    int op;
-    int r;
-    int l;
-    int m;
-} instruction;
-
-
-// Global variables
-int currentToken;
-int curReg;
-symbol symbolList[50];
-symbol symbolTable[100];
-int stIndex;
-int codeLine;
-instruction code[CODE_SIZE];
-int printSuccess;
-int level;
-
-
-// function declarations
-void program( node *currentNode);
-void block( node *currentNode );
-int const_declaration( node *currentNode );
-int  var_declaration( node *currentNode );
-int procedure_declaration( node *currentNode );
-void statement( node *currentNode );
-void condition( node *currentNode );
-int  rel_op( );
-void expression( node *currentNode );
-void term( node *currentNode );
-void factor( node *currentNode );
-void getNextToken( node *currentNode );
-void error( int errorVal );
-void addtoSymbolTable( int symbolKind, int symListIndex );
-int findToken( int token );
-
-
-node *createNode( int data );
-node *insertNode( node *head, node *tail, int token );
-node *getLexemeList();
-
-int getSymbolList( symbol *st );
-
-void destroyNodes( node *headNode );
-
-void emit( int op, int r, int l, int m );
-
-void printCode();
-
-void printNodes( node **head );
-
-
-
-// begin function main
-int main( int argc, char **argv )
-{
-    int i, stSize;
-    curReg = -1;
-    codeLine = 0;
-    printSuccess = 0;
-    level = -1;
-    stIndex = 0;
-    
-    // if Compile Driver passes an argument, then print to screen the success result
-    if ( argc > 1 )
-        printSuccess = 1;
-    
-    // gets the lexeme list into the global variable
-    node *currentNode, **head;
-    currentNode = getLexemeList();
-    
-    // put the symbol table into global variable symbol table
-    stSize = getSymbolList( symbolList );
-    
-    /*
-    // for debugging - comment out when program running
-    for ( i = 1; i <= stSize; i++ )
-    {
-        printf("%d thing in symbol table is %s\n", i, symbolTable[i].name);
-    }
-    */
-    
-    // call program
-    program( currentNode );
-    
-    // Following code used for debugging.  Comment out when done.
-    /*
-    FILE *symbTabFP = fopen("symboltable-New.txt", "w+");
-    
-    fprintf(symbTabFP, "\nSymbol Table:\n");
-    fprintf(symbTabFP, "name\tkind\tvalue\tlevel\taddr\n");
-    
-    // print out the symbol table to the output file and the symbol output file
-    for (i = 0; i < stSize; i++ )
-    {
-        fprintf(symbTabFP, "%s\t%d\t%d\t%d\t%d\n", symbolTable[i].name,
-                symbolTable[i].kind, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr);
-    }
-    // close the symbol file
-    fclose( symbTabFP);
-    */
-    
-    printCode();
-
-}// end function main
-
-
-// checks to make sure this block of code fits the definition for a program
-// as defined by the EBNF grammar
-void program( node *currentNode )
-{
-    // get the first token
-    getNextToken( currentNode );
-    
-    block( currentNode );
-    
-    // if the program does not end with a period, error
-    if (currentToken != periodSym )
-    {
-        error(6);
-    }
-    else
-    {
-        emit( SIO3, 0, 0, 3 );  // SIO R 0 3 - halt program
-        if ( printSuccess )
-            printf("No errors, program is syntactically correct\n" );
-    }
-}// end function program
-
-
-// checks to make sure this block of code fits the definition for a block
-// as defined by EBNF
-void block( node *currentNode )
-{
-    int space, numVars = 0, numProcs = 0, numConsts = 0;
-    int jmpAddress, procAddress;
     int i;
-    
-    level++;
-    /*
-    if ( level == 0 )  // we are in main, so only need space for new variables
-    {
-        space = 0;
-    }
-    else    // also create space in AR for funct val, SL, DL, & RA
-    {
-        space = 4;
-    }
-     */
-    space = 4;
-    
-    jmpAddress = codeLine;
-    emit( JMP, 0, 0, 0 );
-    
-    // calls the appropriate function based on current token
-    if (currentToken == constSym )
-        numConsts = const_declaration( currentNode );
-    
-    if ( currentToken == varSym )
-    {
-        numVars = var_declaration( currentNode );
-    }
-    
-    space += numVars;
-    
-    if ( currentToken == procSym )
-        numProcs = procedure_declaration( currentNode );
-    
-    code[jmpAddress].m = codeLine;
-    
-    emit( INC, 0, 0 , space );
-    
-    statement( currentNode );
-    
-    
-    // uncomment next section for debugging purposes
-    /*
-    for ( i = 0; i <= stIndex; i++ )
-        printf("%s\t%d\t%d\t%d\t%d\n", symbolTable[i].name,
-                       symbolTable[i].kind, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr);
-    */
-    
-    stIndex = stIndex - (numVars + numProcs + numConsts);
-    emit( RTN, 0, 0, 0 );
-    
-    level--;
-    
-}// end function block
+    int lev = 0; //Lexigraphical ldevel
+    int dx = 0; //data index
+    int tx = 0; //table index
 
+    //Declaring symbol_table array of symbol structs
+    //symbol table needs to be 2D array of size [max][4] because max lex level is 3, so 0,1,2,3 is size[4]
+    symbol table[MAX_SYMBOL_TABLE_SIZE] = {0};
 
-// checks to make sure this block of code fits the definition for the constant
-// declaration as defined by EBNF
-int const_declaration( node *currentNode )
+    //array of instruction structs, called code, which holds the instructions formed in parser from the lexList, which will be passed to the vm.c
+    instruction code[CODE_SIZE];
+
+    //start program
+    program(ifp, table, code);
+
+    //prints instructions to file
+    for (i=0; i<cx;i++) {
+       fprintf(ofp, "%d %d %d\n", code[i].op, code[i].l, code[i].m);
+    }
+    fclose(ifp);
+    fclose(ofp);
+}
+
+void program(FILE* ifp, symbol* table, instruction* code) 
 {
-    int symListIndex, constIndex, constValue;
-    int constCount = 0;
+
+    token = getNextToken(ifp);
+    block(0,0, table, ifp, code);
+  
+    if (token!=periodsym) 
+    {
+        error(9); //Period expected.
+    }
+}
+
+void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code) 
+{
     
-    // repeat getting new constants as long as there are more
-    // (indicated by a comma)
-    do{
+    //errors for above max lexi level
+    if(lev > MAX_LEXI_LEVELS) 
+    {
+        error(26);
+    }
     
-        getNextToken( currentNode );
-    
-        if ( currentToken != identSym )
-            error(4);
-        
-        // gets the index in the symbol table of the current identifier,
-        // and changes its kind to a constant
-        getNextToken( currentNode );
-        symListIndex = currentToken;
-        addtoSymbolTable( constant, symListIndex );
-        constCount++;
-        
-        //symbolTable[stIndex].kind = constant;
-        
-        getNextToken( currentNode );
-        if ( currentToken != eqSym )
+    int dx, tx0, cx0;
+    //this changes the amount in M for INC calls, so if dx=3; we will only create space for sp,bp,pc, which throws off vm.c, but if dx=4; meaning we will create space for sp,bp,pc,and retrun value, which makes vm.c work properly.
+    dx=4;
+    tx0=tx;
+    table[tx].addr=cx;
+    emit(7,0,0, code); // 7 is JMP for op, 0 is for L and 0 for M
+
+    do {
+        if (token==constsym) 
         {
-            if ( currentToken == becomesSym )
-                error(1);
-            else
-                error(3);
+            token = getNextToken(ifp);
+            do {
+                constdeclaration(lev,&tx,&dx, ifp, table);
+                while(token==commasym) 
+                {
+                    token = getNextToken(ifp);
+                    constdeclaration(lev,&tx,&dx, ifp, table);
+                }
+                if(token==semicolonsym) 
+                {
+                    token = getNextToken(ifp);
+                }
+                else {
+                    error(5); //Semicolon or comma missing.
+                }
+            } while (token==identsym);
+        }
+        if (token==varsym) 
+        {
+            token = getNextToken(ifp);
+            do 
+            {
+                vardeclaration(lev,&tx,&dx, ifp, table);
+                while (token==commasym) 
+                {
+                    token = getNextToken(ifp);
+                    vardeclaration(lev,&tx,&dx, ifp, table);
+                }
+                if(token==semicolonsym) {
+                    token = getNextToken(ifp);
+                }
+                else {
+                    error(5); //Semicolon or comma missing.
+                }
+            } while(token==identsym);
+        }
+        while(token==procsym) 
+        {
+            token = getNextToken(ifp);
+
+            if(token==identsym) 
+            {
+                enter(3, &tx, &dx, lev, table); //procedure
+                token = getNextToken(ifp);
+            }
+            else {
+                error(4); //const, var, procedure must be followed by identifier.
+            }
+            if(token==semicolonsym) 
+            {
+                token = getNextToken(ifp);
+            }
+            else {
+                error(5); //Semicolon or comma missing.
+            }
+            //lev++; call lev in block after incrementing
+            block(lev+1, tx, table, ifp, code); //Go to a block one level higher
+
+            if(token==semicolonsym) 
+            {
+                token = getNextToken(ifp);
+            }
+            else 
+            {
+                error(5); //Semicolon or comma missing.
+            }
+        }
+    }
+   while((token==constsym) || (token==varsym) || (token==procsym));
+
+    //The tentative jump address is fixed up
+    code[table[tx0].addr].m=cx;
+    //the space for address for the above jmp is now occupied by the new cx
+    table[tx0].addr=cx;
+    //inc 0, dx is generated. At run time, the space of dx is secured
+    cx0=cx;
+    emit(6, 0, dx, code); // 6 is INC for op, 0 is for L, and dx is M
+    statement(lev, &tx, ifp, code, table);
+    emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
+}
+
+void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) {
+    
+    if (token==identsym) {
+        token = getNextToken(ifp);
+        if ((token==eqsym) || (token==becomessym)) {
+            if (token==becomessym) {
+                error(1); //Use = instead of :=
+            }
+            token = getNextToken(ifp);
+            if (token==numbersym) {
+                enter(1,ptx,pdx,lev, table);//const
+                token = getNextToken(ifp);
+            }
+        }
+    }
+}
+
+void vardeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) 
+{
+    
+    if (token==identsym) 
+    {
+        enter(2,ptx,pdx,lev, table);//var
+        token = getNextToken(ifp);
+    }
+    else error(4); //const, var, procedure must be followed by identifier.
+}
+
+void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table) 
+{
+    
+    int i, cx1, cx2;
+
+    if (token==identsym)
+    {
+        i=position(id,ptx, table, lev);
+        if(i==0) 
+        {
+            error(11); //Undeclared identifier.
+        }
+        else if (table[i].kind!=2) 
+        { //var
+                error(12); //Assignment to constant or procedure is not allowed
+                i=0;
+        }
+        token = getNextToken(ifp);
+        if (token==becomessym) 
+        {
+            token = getNextToken(ifp);
+        }
+        else 
+        {
+            error(13); //Assignment operator expected.
+        }
+        expression(lev, ptx, ifp, code, table);
+        if (i!=0) 
+        {
+            emit(4, lev-table[i].level, table[i].addr, code); // 4 is STO for op, lev-table[i].level is for L, table[i].adr for M
+        }
+    }
+    else if (token==callsym) 
+    {
+        token = getNextToken(ifp);
+        if (token!=identsym) 
+        {
+            error(14); //call must be followed by an identifier
+        }
+        else 
+        {
+            i=position(id, ptx, table, lev);
+            if(i==0) 
+            {
+                error(11); //Undeclared identifier.
+            }
+            else if (table[i].kind==3) 
+            {//proc
+                emit(5,lev-table[i].level, table[i].addr, code); // 5 is CAL for op, lev-table[i].level is for L, table[i].adr for M
+                //statement::= ["call" ident | ...]
+            }
+            else 
+            {
+                    error(15); //Call of a constant or variable is meaningless
+            }
+            token = getNextToken(ifp);
+        }
+    }
+
+    //if <condition> then <statement>
+    else if (token == ifsym) 
+    {
+        token = getNextToken(ifp);
+        condition(lev, ptx, ifp, code, table);
+        if(token == thensym) 
+        {
+            token = getNextToken(ifp);
+        }
+        else 
+        {
+            error(16);  // then expected
         }
         
+        cx1 = cx;
+        emit(8, 0, 0, code); // 8 is JPC for op, 0 is for L and 0 for M
+        statement(lev, ptx, ifp, code, table);
     
-        getNextToken( currentNode );
-    
-        if ( currentToken != numberSym )
-            error(2);
-        
-        // get the value the constant is set to, and sets the value of the
-        // constant to the value of the integer
-        getNextToken( currentNode );
-        constIndex = currentToken;
-        constValue = atoi( symbolList[constIndex].name );
-        symbolTable[stIndex].val = constValue;
-        
-        getNextToken( currentNode );
-        
-    } while ( currentToken == commaSym );
-    
-    // if there are no more const, then we should have a semicolon
-    if ( currentToken != semicolonSym )
-        error(5);
-    
-    getNextToken( currentNode );
-
-    return constCount;
-    
-}// end function const_declaration
-
-
-
-// checks to make sure this block of code fits the definition for the variable
-// declaration as defined by EBNF, and returns # of variables declared
-int var_declaration( node *currentNode )
-{
-    int symListIndex;
-    int varCount = 0;
-    
-    // repeat getting new constants as long as there are more
-    // (indicated by a comma)
-    do{
-        
-        getNextToken( currentNode );
-        
-        if ( currentToken != identSym )
-            error(4);
-        
-        getNextToken( currentNode );
-        
-        // get the symbol table index for the variable and initialize the
-        // appropriate symbol table values
-        symListIndex = currentToken;
-        
-        
-        addtoSymbolTable( variable, symListIndex );
-        symbolTable[stIndex].addr = 4 + varCount; // add 4 to account for other
-        // items in activation record  (space from base pointer)
-        
-        
-        getNextToken( currentNode );
-        
-        // keep track of the number of variables declared
-        varCount++;
-        
-    } while ( currentToken == commaSym );
-    
-    // if there are no more const, then we should have a semicolon
-    if ( currentToken != semicolonSym )
-        error(5);
-    
-    getNextToken( currentNode );
-    //emit( INC, 0 , 0, varCount );     // INC
-    
-    return varCount;
-    
-}// end function var_declaration
-
-
-
-// checks to make sure this block of code fits the definition for the procedure
-// declaration as defined by the EBNF
-int procedure_declaration( node *currentNode )
-{
-    int symListIndex, procCount = 0;
-    
-    do{
-        procCount++;
-        getNextToken( currentNode );
-        
-        if ( currentToken != identSym )
-            error(4);
-        
-        getNextToken( currentNode );
-        
-        // get the symbol table index for the variable and initialize the
-        // appropriate symbol table values
-        symListIndex = currentToken;
-        addtoSymbolTable( procedure, symListIndex );
-        symbolTable[stIndex].level = level;
-        symbolTable[stIndex].addr = codeLine;
-        
-        //printf("Procedure %s is at line %d\n", symbolTable[stIndex].name, symbolTable[stIndex].addr);
-
-        getNextToken( currentNode );
-        
-        // if there are no more const, then we should have a semicolon
-        if ( currentToken != semicolonSym )
-            error(5);
-        
-        getNextToken( currentNode );
-        
-        block( currentNode );
-        
-        // if there are no more const, then we should have a semicolon
-        if ( currentToken != semicolonSym )
-            error(5);
-        
-        getNextToken( currentNode );
-        
-    } while ( currentToken == procSym );
-    
-    return procCount;
-    
-}// end function procedure_declaration
-
-
-
-// checks to make sure this block of code fits the definition for the statement
-// as defined by EBNF
-void statement( node *currentNode )
-{
-    int i, ctemp, cx1, cx2;
-    int index;
-    
-    // ident ":=" expression
-    if (currentToken == identSym )
-    {
-        getNextToken( currentNode );
-        
-        i = currentToken;
-        
-        index = findToken(i);
-        //printf("At location %d\n", index);
-        
-        if ( index == 0 )
-            error(7);
-        
-        if (symbolTable[index].kind != variable )
+        /**working on else**/
+        if(token == elsesym) 
         {
-            error(8);
-        }
-        
-        getNextToken( currentNode );
-        
-        if ( currentToken != becomesSym )
-            error(9);
-        
-        getNextToken( currentNode );
-        
-        expression( currentNode );
-        
-        emit( STO, curReg, level - symbolTable[index].level, symbolTable[index].addr );    // STO = 4
-        curReg--;
-        
-    } // end ident if
-    
-    // "call" ident
-    else if ( currentToken == callSym )
-    {
-        getNextToken( currentNode );
-        
-        if ( currentToken != identSym )
-            error(23);
-        
-        getNextToken( currentNode );
-        
-        i = findToken( currentToken );
-        
-        if ( i == 0 )
-            error(7);
-        
-        if ( symbolTable[i].kind != procedure )
-            error(24);
-        
-        // printf( "CAL on index %d for %s is at location %d\n", i, symbolTable[i].name, symbolTable[i].addr);
-        emit ( CAL, 0, level - symbolTable[i].level, symbolTable[i].addr ); // CAL = 5
-        
-        getNextToken( currentNode );
-        
-    }
-    
-    
-    // "begin" statement { ";" statement } "end"
-    else if ( currentToken == beginSym )
-    {
-        getNextToken( currentNode );
-        
-        statement( currentNode );
-        
-        while ( currentToken == semicolonSym )
-        {
-            getNextToken( currentNode );
-            statement( currentNode );
-        }
-        
-        if ( currentToken != endSym )
-            error(11);
-        
-        getNextToken( currentNode );
-    }// end "begin" if
-    
-    
-    // "if" condition "then" statement ["else" statement]
-    else if ( currentToken == ifSym )
-    {
-        getNextToken( currentNode );
-        
-        condition( currentNode );
-        
-        if ( currentToken != thenSym )
-            error(10);
-        
-        getNextToken( currentNode );
-        
-        ctemp = codeLine;
-        emit( JPC, curReg, 0, 0 );    // JPC
-        curReg--;
-        
-        statement( currentNode );
-        
-        if ( currentToken == elseSym )
-        {
-            getNextToken( currentNode );
+            token = getNextToken(ifp);
             
-            cx2 = codeLine;
-            emit (JMP, 0, 0, 0 );
-            
-            code[ctemp].m = codeLine;
-        
-            statement( currentNode );
-            code[cx2].m = codeLine;
+            code[cx1].m = cx+1; //jumps past if
+            cx1 = cx;
+            emit(7, 0, 0, code); // 7 is JMP for op, 0 is for L and cx1 for M
+            //updates JPC M value
+            statement(lev, ptx, ifp, code, table);
         }
-        else
-        {
-            code[ctemp].m = codeLine;
-        }
-        
-    }// end "if" if
-    
-    // "while" condition "do" statement
-    else if ( currentToken == whileSym )
-    {
-        cx1 = codeLine;
-        
-        getNextToken( currentNode );
-        
-        condition( currentNode );
-        
-        cx2 = codeLine;
-        
-        emit( JPC, curReg, 0, 0 );    // JPC
-        
-        if ( currentToken != doSym )
-            error(12);          // then expected
-        
-        getNextToken( currentNode );
-        
-        statement( currentNode );
-        
-        emit( JMP, 0, 0, cx1 );    // JMP
-        
-        code[cx2].m = codeLine;
+        code[cx1].m = cx; //jumps past else (if theres an else statement) otherwise jumps past if
+    }
 
-    }// end "while" if
-    
-    // "read" ident
-    else if ( currentToken == readSym )
+    //begin <condition> end <statement>
+    else if (token == beginsym) 
     {
-        getNextToken( currentNode );
+        token = getNextToken(ifp);
+        statement(lev, ptx, ifp, code, table);
         
-        if ( currentToken != identSym )
-        {
-            error(18);
-        }
-        
-        getNextToken(currentNode);
-        
-        i = currentToken;
-        index = findToken(i);
-        
-        if ( symbolTable[index].kind != variable )
-        {
-            error(11);
-        }
-        
-        // read in user input and store it in variable
-        curReg++;
-        emit( SIO2, curReg, 0, 2 );   // SIO R 0 2 - read
-        emit( STO, curReg, level - symbolTable[index].level, symbolTable[index].addr );    // STO
-        curReg--;
-        
-        getNextToken( currentNode );
-        
-    }// end "read" if
-    
-    // "write"  ident
-    else if ( currentToken == writeSym )
-    {
-        getNextToken( currentNode );
-        
-        if ( currentToken != identSym )
-        {
-            error(18);
-        }
-        
-        getNextToken(currentNode);
-        i = currentToken;
-        index = findToken(i);
-        
-        if ( symbolTable[index].kind != variable )
-        {
-            error(11);
-        }
-        
-        // write variable to screen
-        curReg++;
-        emit( LOD, curReg, level - symbolTable[index].level, symbolTable[index].addr );    // LOD
-        emit( SIO1, curReg, 0, 1 );    // SIO R 0 1 - print
-        curReg--;
-        
-        getNextToken( currentNode );
-        
-    }// end "write" if
-    
-    // empty string do nothing
-    
-    
-}// end function statement
+         /**changed**/
+         while (token == semicolonsym) 
+         {
+            token = getNextToken(ifp);
+            statement(lev, ptx, ifp, code, table);
+         }
 
 
-// checks to make sure this block of code fits the definition for the condtion
-// as defined by the EBNF
-void condition( node *currentNode )
-{
-    int relOpCode;
-    
-    // "odd" expression
-    if ( currentToken == oddSym )
+        if (token == endsym) 
+        {
+            token = getNextToken(ifp);
+        }
+        else 
+        {
+            error(17);  //Semicolon or } expected.
+        }
+    }
+
+
+
+    else if (token == whilesym) 
     {
-        getNextToken( currentNode );
-        
-        expression( currentNode );
-        
-        emit( ODD, curReg, 0, 0 );   // ODD
-        
+        cx1 =cx;
+        token = getNextToken(ifp);
+        condition(lev,ptx, ifp, code, table);
+        cx2 = cx;
+        emit(8, 0, 0, code); // 8 is JPC for op, 0 is for L and 0 for M
+        if(token == dosym) 
+        {
+            token = getNextToken(ifp);
+        }
+        else 
+        {
+            error(18);  // do expected
+        }
+        statement(lev, ptx, ifp, code, table);
+        emit(7, 0, cx1, code); // 7 is JMP for op, 0 is for L and cx1 for M, jump to instruction cx1
+        code[cx2].m = cx;
+    }
+
+    //write needs to write
+    else if (token == writesym) 
+    {
+        token = getNextToken(ifp);
+        expression(lev, ptx, ifp, code, table);
+        emit(9,0,1, code); // 9 is SIO1 for op, 0 is for L and 1 for M, write the top stack element to the screen
     }
     
-    // expression rel_op expression
-    else
+    //read needs to read and STO
+    else if (token == readsym) 
     {
-        expression( currentNode );
-        
-        relOpCode = rel_op( );
-        if ( !relOpCode )
+        token = getNextToken(ifp);
+        emit(10,0,2, code); // 10 is SIO2 for op, 0 is for L and 1 for M, write the top stack element to the screen
+        i=position(id,ptx, table, lev);
+        if(i==0) 
         {
-            error(13);
+            error(11); //Undeclared identifier.
         }
-        
-        getNextToken( currentNode );
-        
-        expression( currentNode );
-        
-        emit( relOpCode, curReg-1, curReg-1, curReg );  // EQL thru GEQ
-        curReg--;
+        else if (table[i].kind!=2) 
+        { //var
+            error(12); //Assignment to constant or procedure is not allowed
+            i=0;
+        }
+        if (i!=0) 
+        {
+            emit(4, lev-table[i].level, table[i].addr, code); // 4 is STO for op, lev-table[i].level is for L, table[i].adr for M
+        }
+         token = getNextToken(ifp);
     }
-}// end function condition
 
+}
 
-// returns token value for relational op, returns 0 if it is not one
-int rel_op (  )
+void condition(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table) 
 {
-    switch ( currentToken )
-    {
-        case eqSym:
-            return EQL;  // 19
-            break;
-        case neqSym:
-            return NEQ;  // 20
-            break;
-        case lesSym:
-            return LSS;  // 21
-            break;
-        case leqSym:
-            return LEQ;  // 22
-            break;
-        case gtrSym:
-            return GTR;  // 23
-            break;
-        case geqSym:
-            return GEQ;  // 24
-            break;
-        default:
-            return 0;   // error
-    }// end switch
     
-}// end function rel_op
+    int relationSwitch;
 
+     if (token == oddsym) 
+     {
+         token = getNextToken(ifp);
+        expression(lev,ptx, ifp, code, table);
+         emit(2, 0, 6, code); // 2 is OPR for op, 6 is ODD for M inside OPR
+     }
+    else 
+    {
+        expression(lev,ptx, ifp, code, table);
+        if ((token!=eqsym) && (token!=neqsym) && (token!=lessym) && (token!=leqsym) && (token!=gtrsym) && (token!=geqsym)) 
+        {
+            error(20); //Relational operator expected.
+        }
+        else 
+        { //for relational operators
+            relationSwitch = token;
+            token = getNextToken(ifp);
+            expression(lev, ptx, ifp, code, table);
+            switch(relationSwitch) 
+            {
+                case 9:
+                    emit(2,0,8, code); // 2 is OPR for op, 8 is EQL for M inside OPR
+                    break;
+                case 10:
+                    emit(2,0,9, code); // 2 is OPR for op, 9 is NEQ for M inside OPR
+                    break;
+                case 11:
+                    emit(2,0,10, code); // 2 is OPR for op, 10 is LSS for M inside OPR
+                    break;
+                case 12:
+                    emit(2,0,11, code); // 2 is OPR for op, 11 is LEQ for M inside OPR
+                    break;
+                case 13:
+                    emit(2,0,12, code); // 2 is OPR for op, 12 is GTR for M inside OPR
+                    break;
+                case 14:
+                    emit(2,0,13, code); // 2 is OPR for op, 13 is GEQ for M inside OPR
+                    break;
+            }
+        }
+    }
+}
 
-// checks to make sure this block of code fits the definition for expression
-// as defined by the EBNF
-void expression( node *currentNode )
+void expression(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table) 
 {
+
     int addop;
-    
-    // if there is a plus or minus symbol in front
-    if ( currentToken == plusSym || currentToken == minusSym )
+    if (token == plussym || token == minussym) 
     {
-        addop = currentToken;
-        
-        getNextToken( currentNode );
-        term ( currentNode );
-        
-        emit( NEG, curReg, curReg, 0 );  // 12
-    }
-    else
-    {
-        term ( currentNode );
-    }
-    // keep looping as long as there is another plus or minus symbol
-    while ( currentToken == plusSym || currentToken == minusSym )
-    {
-        addop = currentToken;
-        
-        getNextToken( currentNode );
-        term( currentNode );
-    
-        if ( addop == plusSym )
+        addop = token;
+        token = getNextToken(ifp);
+        term(lev, ptx, ifp, code, table);
+        if(addop == minussym) 
         {
-            emit ( ADD, curReg-1, curReg-1, curReg );    // ADD = 13
-            curReg--;
-        }
-        if ( addop == minusSym )
-        {
-            emit ( SUB, curReg-1, curReg-1, curReg );    // SUB = 14
-            curReg--;
+            emit(2, 0, 1, code); // 2 is OPR for op, 1 is NEG for M inside OPR
         }
     }
-    
-}// end function expression
+    else 
+    {
+        term (lev, ptx, ifp, code, table);
+    }
+    while (token == plussym || token == minussym) 
+    {
+        addop = token;
+        token = getNextToken(ifp);
+        term(lev, ptx, ifp, code, table);
+        if (addop == plussym) 
+        {
+            emit(2, 0, 2, code); // 2 is OPR for op, 2 is ADD for M inside OPR
+        }
+        else 
+        {
+            emit(2, 0, 3, code); // 2 is OPR for op, 3 is SUB for M inside OPR
+        }
+    }
+}
 
-
-// checks to make sure this block of code fits the definition for the term
-// as defined by the EBNF
-void term( node *currentNode )
+void term(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table) 
 {
-    int mulOp;
     
-    factor( currentNode );
-    
-    // keep looping if there are more divide or multiplication symbols
-    while ( currentToken == slashSym || currentToken == multSym )
+    int mulop;
+    factor(lev, ptx, table, ifp, code);
+    while(token == multsym || token == slashsym) 
     {
-        mulOp = currentToken;
-        
-        getNextToken( currentNode );
-        factor( currentNode );
-        
-        if ( mulOp == multSym )     // Multiplication
+        mulop = token;
+        token = getNextToken(ifp);
+        factor(lev, ptx, table, ifp, code);
+        if(mulop == multsym) 
         {
-            emit( MUL, curReg-1, curReg-1, curReg ); // MUL = 15
-            curReg--;
+            emit(2, 0, 4, code); // 2 is OPR for op, 4 is MUL for M inside OPR
         }
-        if ( mulOp == slashSym )    // Division
+        else 
         {
-            emit( DIV, curReg-1, curReg-1, curReg ); // DIV = 16
-            curReg--;
+            emit(2, 0, 5, code); // 2 is OPR for op, 5 is DIV for M inside OPR
         }
     }
-}// end function term
+}
 
-
-// checks to make sure this block of code fits the definition for factor
-// as defined by the EBNF
-void factor( node *currentNode )
+void factor(int lev, int *ptx, symbol* table, FILE* ifp, instruction* code) 
 {
-    int index, i;
-    int value;
     
-    // identifier
-    if ( currentToken == identSym )
-    {
-        getNextToken( currentNode );
-        i = currentToken;
-        index = findToken(i);
-        
-        curReg++;
-        
-        if ( symbolTable[index].kind == variable )
-        {
-            emit( LOD, curReg, level - symbolTable[index].level, symbolTable[index].addr );    // LOD = 3
-        }
-        else if ( symbolTable[index].kind == constant )
-        {
-            emit( LIT, curReg, 0, symbolTable[index].val );     // LIT = 1
-        }
-        else
-        {
-            error(14);
-        }
-        
-        getNextToken( currentNode );
-    }
-    // number
-    else if ( currentToken == numberSym )
-    {
-        getNextToken( currentNode );
-        i = currentToken;
-        //index = findToken(i);
-        
-        value = atoi( symbolList[i].name );
-        curReg++;
-        emit( LIT, curReg, 0, value );                   // LIT = 1
-        
-        getNextToken( currentNode );
-    }
-    // "(" expression ")"
-    else if ( currentToken == lparentSym )
-    {
-        getNextToken( currentNode );
-        expression( currentNode );
-        
-        if ( currentToken != rparentSym )
-            error(15);
-        
-        getNextToken( currentNode );
-    }
-    else
-        error(16);
-    
-}// end function factor
+    int i, level, adr, val;
 
+    while ((token==identsym)||(token==numbersym)||(token==lparentsym))
+    {
+        if (token==identsym) 
+        {
+            i=position(id,ptx, table, lev);
+            if (i==0) 
+            {
+                error(11); // undeclared identifier
+            }
+            else 
+            {
+                kind=table[i].kind;
+                level=table[i].level;
+                adr=table[i].addr;
+                val=table[i].val;
+                if (kind==1) {//const
+                    emit(1,0,val, code); // 1 is LIT for op, val is for M inside LIT
+                }
+                else if (kind==2) 
+                {//var
+                    emit(3,lev-level,adr, code); // 3 is LOD for op, lev-level is L inside LOD, adr is for M inside LOD
+                }
+                else 
+                {
+                    error(21); // Expression must not contain a procedure identifier
+                }
+            }
+            token = getNextToken(ifp);
+        }
+        /***this might need to be changed***/
+        else if(token==numbersym) 
+        {
+            if (num>2047) 
+            { //maximum address
+                error(25);
+                num=0;
+            }
+            emit(1,0,num, code); // 1 is LIT for op, num is for M inside LIT
+            token = getNextToken(ifp);
+        }
+        else if(token==lparentsym) 
+        {
+            token = getNextToken(ifp);
+            expression(lev,ptx, ifp, code, table);
+            if (token==rparentsym) 
+            {
+                token = getNextToken(ifp);
+            }
+            else 
+            {
+                error(22); // Right parenthesis missing.
+            }
+        }
+    }
+}
 
-
-// gets the next token in the lexeme list from lexeme list linked list
-void getNextToken( node *currentNode )
+void emit(int op, int l, int m, instruction* code) 
 {
-    node *temp;
-    
-    currentToken = currentNode->token;
-    
-    if ( currentNode->next != NULL )
-    {
-        *currentNode = *currentNode->next;
+
+    if (cx > CODE_SIZE)
+        printf("Program too long! cx > CODE_SIZE\n");
+    else {
+        code[cx].op = op; 	//opcode
+        code[cx].l = l;	// lexicographical level
+        code[cx].m = m;	// modifier
+        cx++;
     }
-    
-    // used for debugging:  comment out when done
-    // printf("%d\n", currentToken );
-    
-}// end function getNextToken
+}
 
-
-
-// exits program and prints appropriate error message
-void error( int errorVal )
+//This enters a symbol into the table
+void enter(int k, int *ptx, int *pdx, int lev, symbol* table) 
 {
-    printf("Error ");
-    switch ( errorVal )
+    
+    char *id1;
+    int ii, len;
+    (*ptx)++; //table index tx is increased by 1
+    id1=id; //last identifier read
+    len=strlen(id);
+    for (ii=0;ii<=len;ii++) 
+    {
+        table[*ptx].name[ii]=*id1; //id is recorded in .name
+        id1++;
+    }
+    //updates kind
+    table[*ptx].kind=k;
+    //for constants: updates value
+     if (k==1) {//const
+        table[*ptx].val=num;
+    }
+    //for variables: updates L and M 
+    else if (k==2) {//var
+        table[*ptx].level=lev;
+        table[*ptx].addr=*pdx;
+        (*pdx)++;
+    }
+    //for procedures: updates L because M will change
+    else {//procedure
+        table[*ptx].level=lev;
+    }
+}
+
+//prints out errors
+void error(int errorCase) 
+{
+
+    errorCount++;
+    
+    switch (errorCase) 
     {
         case 1:
-            printf("1. Use = instead of :=.");
+            printf("Error 1: ");
+            printf("Use = instead of :=.\n");
             break;
         case 2:
-            printf("2. = must be followed by a number.");
+            printf("Error 2: ");
+            printf("= must be followed by a number.\n");
             break;
         case 3:
-            printf("3. Identifier must be followed by =.");
+            printf("Error 3: ");
+            printf("Identifier must be followed by =.\n");
             break;
         case 4:
-            printf("4. const, var, procedure must be followed by identifier.");
+            printf("Error 4: ");
+            printf("const, var, procedure must be followed by identifier.\n");
             break;
         case 5:
-            printf("5. Semicolon or comma missing.");
+            printf("Error 5: ");
+            printf("Semicolon or comma missing.\n");
             break;
         case 6:
-            printf("6. Period expected.");
+            printf("Error 6: ");
+            printf("Incorrect symbol after procedure declaration.\n");
             break;
         case 7:
-            printf("7. Undeclared identifier.");
+            printf("Error 7: ");
+            printf("Statement expected\n");
             break;
         case 8:
-            printf("8. Assignment to constant or procedure is not allowed.");
+            printf("Error 8: ");
+            printf("Incorrect symbol after statement part in block.\n");
             break;
         case 9:
-            printf("9. Assignment operator expected.");
+            printf("Error 9: ");
+            printf("Period expected.\n");
             break;
         case 10:
-            printf("10. then expected.");
+            printf("Error 10: ");
+            printf("Semicolon between statements missing.\n");
             break;
         case 11:
-            printf("11. Semicolon or end expected.");
+            printf("Error 11: ");
+            printf("Undeclared identifier.\n");
             break;
         case 12:
-            printf("12. do expected.");
+            printf("Error 12: ");
+            printf("Assignment to constant or procedure is not allowed.\n");
             break;
         case 13:
-            printf("13. Relational operator expected.");
+            printf("Error 13: ");
+            printf("Assignment operator expected.\n");
             break;
-        case 14:        // Not used this time
-            printf("14. Expression must not contain a procedure identifier.");
+        case 14:
+            printf("Error 14: ");
+            printf("call must be followed by an identifier\n");
             break;
         case 15:
-            printf("15. Right parenthesis missing.");
+            printf("Error 15: ");
+            printf("Call of a constant or variable is meaningless.\n");
             break;
         case 16:
-            printf("16. An expression cannot begin with this symbol.");
+            printf("Error 16: ");
+            printf("then expected\n");
             break;
         case 17:
-            printf("17. This number is too large.");
+            printf("Error 17: ");
+            printf("Semicolon or } expected\n");
             break;
         case 18:
-            printf("18. Read or write must be followed by an identifier.");
+            printf("Error 18: ");
+            printf("do expected\n");
             break;
-            
-            // renumber these ?!
+        case 19:
+            printf("Error 19: ");
+            printf("Incorrect symbol following statement.\n");
+            break;
+        case 20:
+            printf("Error 20: ");
+            printf("Relational operator expected.\n");
+            break;
+        case 21:
+            printf("Error 21: ");
+            printf("Expression must not contain a procedure identifier.\n");
+            break;
+        case 22:
+            printf("Error 22: ");
+            printf("Right parenthesis missing.\n");
+            break;
         case 23:
-            printf("23. Call must be followed by an identifier.");
+            printf("Error 23: ");
+            printf("The preceding factor cannot begin with this symbol.\n");
             break;
         case 24:
-            printf("24. Call of a constant or variable is meaningless." );
+            printf("Error 24: ");
+            printf("An expression cannot begin with this symbol.\n");
+            break;
+        case 25:
+            printf("Error 25: ");
+            printf("This number is too large.\n");
+            break;
+        case 26:
+            printf("Error: 26 ");
+            printf("Level is larger than the maximum allowed lexicographical levels!\n");
+            break;
+        default:
             break;
     }
-    
-    printf( "\n" );
+    //stops program when error occurs
     exit(1);
-}// end function error
+}
 
-
-// reads the lexeme list from file into a linked list and returns the head
-node *getLexemeList()
+int getNextToken(FILE* ifp) 
 {
-    int buffer;
     
-    FILE *llfp;
+    token = lexList[lexemeListIndex].tokenID;
     
-    // create a pointer for the input file
-    llfp = fopen("lexemelist.txt", "rb");
-    
-    // exit program if file not found
-    if (llfp == NULL) {
-        printf("File for lexeme list not found\n");
-        exit(1);
+    //Takes care of variables, always represented by "2 | variable"
+    if(token==2){
+        strcpy(id, lexList[lexemeListIndex].name);
     }
-    
-    node *head, *tail;
-    
-    head = tail = NULL;
-    
-    fscanf(llfp, " %d", &buffer);
-    
-    head = tail = insertNode(head, tail, buffer);
-    
-    // keep scanning until reaching the end of the file
-    while ( fscanf(llfp, "%d", &buffer) != EOF)
+    //Takes care of numbers, always represented by "3 | number"
+    else if(token==3)
     {
-        tail = insertNode(head, tail, buffer);
-        tail->token = buffer;
+        num = lexList[lexemeListIndex].numberValue;
     }
     
-    fclose(llfp);
-    
-    return head;
-    
-}// end function getLexemeList
+    lexemeListIndex++;
+    return token;
+}
 
-
-// insert a new node into the linked list
-node *insertNode( node *head, node *tail, int token )
+int position(char *id, int *ptx, symbol* table, int lev) 
 {
-    // if this is the first node
-    if ( head == NULL )
+    
+    int s;
+    s=*ptx;
+    
+    int currentS;
+    int differenceCount = 0;
+
+    while(s!=0) 
     {
-        return createNode( token );
-    }
-    else
-    {
-        tail->next = createNode( token );
-        return tail->next;
-    }
-    
-}// end function insertNode
-
-
-
-// creates a new node at the end of the linked list
-node *createNode( int data )
-{
-    node *ptr = malloc(sizeof(node));
-    
-    ptr->token = data;
-    ptr->next = NULL;
-    
-    return ptr;
-    
-}// end function createNode
-
-
-// puts the symbol table into the symbol table array, and returns the length
-// of the symbol table
-int getSymbolList( symbol *symList )
-{
-    
-    char buffer[MAX_IDENTIFIER_LENGTH + 1];
-    int i = 0;
-    
-    FILE *sTfp;
-    
-    // create a pointer for the input file
-    sTfp = fopen("symboltable.txt", "rb");
-    
-    // exit program if file not found
-    if (sTfp == NULL) {
-        printf("File with symbol table info not found\n");
-        exit(1);
-    }
-    
-    // keep scanning until reaching the end of the file
-    while ( fscanf(sTfp, "%s", buffer) != EOF)
-    {
-        strcpy(symList[i].name, buffer );
-        //st[i].kind = -1;
-        //st[i].val = -1;
-        //st[i].level = -1;
-        //st[i].addr = -1;
-        i++;
-    }
-    
-    fclose( sTfp );
-
-    return i;
-    
-}// end function getSymbolTable
-
-
-
-// print the appropriate code to the code file
-void emit( int op, int r, int l, int m )
-{
-    code[codeLine].op = op;
-    code[codeLine].r = r;
-    code[codeLine].l = l;
-    code[codeLine].m = m;
-    
-    //fprintf( outFP, "%d %d %d %d\n", op, r, l, m );
-    
-    codeLine++;
-    
-}// end function emit
-
-
-// prints the generated code to the code.txt output file
-void printCode()
-{
-    int i;
-    
-    FILE *ofp;
-    ofp = fopen("code.txt", "w");
-    
-    for ( i = 0; i < codeLine; i++ )
-    {
-        fprintf( ofp, "%d %d %d %d\n", code[i].op, code[i].r, code[i].l,
-                code[i].m );
-    }
-    fclose(ofp);
-}// end function printcode
-
-
-
-// adds the symbol from the symbol table list (from Scanner) to the symbol table
-void addtoSymbolTable( int symbolKind, int symListIndex )
-{
-    stIndex++;
-    
-    // copy name from symbolList to symbolTable
-    strcpy( symbolTable[stIndex].name, symbolList[symListIndex].name );
-    
-    symbolTable[stIndex].level = level;
-    symbolTable[stIndex].kind = symbolKind;
-    
-    /*
-    printf("index %d\t%s\t%d\t%d\t%d\t%d\n", stIndex, symbolTable[stIndex].name,
-            symbolTable[stIndex].kind, symbolTable[stIndex].val,
-           symbolTable[stIndex].level, symbolTable[stIndex].addr);
-    */
-     
-}// end function addtoSymbolTable
-
-
-
-// finds the location of the token in the symbol table
-int findToken( int token )
-{
-    int location;
-    
-    for ( location = stIndex; location > 0; location-- )
-        if ( strcmp( symbolTable[location].name, symbolList[token].name ) == 0 )
-            return location;
+        if (strcmp(table[s].name,id) == 0) 
+        {
         
-    return location;
-}// end function findToken
+            if(table[s].level<=lev) 
+            {
+               
+                if (differenceCount!=0) 
+                {
+                    previousDifference = difference;
+                }
+                
+                difference = lev-table[s].level;
+                
+                if(differenceCount==0) 
+                {
+                    currentS=s;
+                }
+                
+                if (difference<previousDifference) 
+                {
+                    currentS=s;
+                }
+                differenceCount++;
+            }
+        }
+        s--;
+    }
+    //minimum
+    return currentS;
+}

@@ -11,40 +11,12 @@ int c;
 FILE* ifp;
 
 //Given enum for internal representation
-const char *lexSym[] = { "", 
-"nulsym", 			// 1
-"identsym", 		// 2
-"numbersym", 		// 3
-"plussym", 			// 4
-"minussym",			// 5
-    "multsym",  	// 6
-    "slashsym", 	// 7
-    "oddsym", 		// 8
-    "eqsym", 		// 9
-    "neqsym", 		// 10
-    "lessym", 		// 11
-    "leqsym",		// 12
-    "gtrsym", 		// 13
-    "geqsym", 		// 14
-    "lparentsym", 	// 15
-    "rparentsym", 	// 16
-    "commasym", 	// 17
-    "semicolonsym",	// 18
-    "periodsym", 	// 19
-    "becomessym", 	// 20
-    "beginsym", 	// 21
-    "endsym", 		// 22
-    "ifsym", 		// 23
-    "thensym",		// 24
-    "whilesym", 	// 25
-    "dosym", 		// 26
-    "callsym", 		// 27
-    "constsym", 	// 28
-    "varsym", 		// 29
-    "procsym", 		// 30
-    "writesym",		// 31
-    "readsym" , 	// 32
-    "elsesym"};		// 33
+const char *lexSym[] = { "", "nulsym", "identsym", "numbersym", "plussym", "minussym",
+    "multsym",  "slashsym", "oddsym", "eqsym", "neqsym", "lessym", "leqsym",
+    "gtrsym", "geqsym", "lparentsym", "rparentsym", "commasym", "semicolonsym",
+    "periodsym", "becomessym", "beginsym", "endsym", "ifsym", "thensym",
+    "whilesym", "dosym", "callsym", "constsym", "varsym", "procsym", "writesym",
+    "readsym" , "elsesym"};
 
 //functions
 void usage(void);
@@ -65,10 +37,10 @@ void compile(FILE* in, FILE* out) {
     lex(in);
     
     //run parser.c with the input file, that is the output file from lex. This then writes to another output file that the vm reads
-    parse(out);
+    parse();
     
     //run vm.c with the input file, that is the output file from the parser. This then writes to a 3rd and final output file, which will have all the vm prints.
-     //vm(); commented out since we are not worried about this for the time being 
+     vm(out); 
     
     
     

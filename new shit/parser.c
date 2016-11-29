@@ -50,7 +50,7 @@ void parse(FILE* out)
    ofp = out;
     
     int i;
-    int lev = 0; //Lexigraphical ldevel
+    int lev = 0; //Lexigraphical level
     int dx = 0; //data index
     int tx = 0; //table index
 
@@ -185,7 +185,8 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
     emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
 }
 
-void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) {
+void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) 
+{
     
     if (token==identsym) {
         token = getNextToken(ifp);
