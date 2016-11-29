@@ -64,12 +64,14 @@ void parse(FILE* out)
     //start program
     program(ifp, table, code);
 
+
     //prints instructions to file
-    for (i=0; i<cx;i++) {
+    for (i = 0; i < cx ; i++) 
+    {
        fprintf(ofp, "%d %d %d\n", code[i].op, code[i].l, code[i].m);
     }
     fclose(ifp);
-    fclose(ofp);
+    fclose(ofp);  
 }
 
 void program(FILE* ifp, symbol* table, instruction* code) 
@@ -82,6 +84,12 @@ void program(FILE* ifp, symbol* table, instruction* code)
     {
         error(9); //Period expected.
     }
+    else
+    {
+         emit(9,0,2,code);//HLT
+
+    }
+    
 }
 
 void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code) 
@@ -171,6 +179,7 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
             {
                 error(5); //Semicolon or comma missing.
             }
+            emit(2,0,0,code);//Debug:
         }
     }while((token==constsym) || (token==varsym) || (token==procsym));
 
@@ -182,7 +191,7 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
     cx0=cx;
     emit(6, 0, dx, code); // 6 is INC for op, 0 is for L, and dx is M
     statement(lev, &tx, ifp, code, table);
-    emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
+    //emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
 }
 
 void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) 
