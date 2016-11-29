@@ -38,7 +38,7 @@ void program(FILE* ifp, symbol* table, instruction* code);
 int cx, token, num, kind, lexemeListIndex=0, errorCount=0, difference, previousDifference=0;
 char id[12];
 
-void parse(void) 
+void parse(FILE* out) 
 {
 
     //Declaring file pointers
@@ -47,10 +47,10 @@ void parse(void)
 
 
    ifp = fopen("lexoutput.txt", "r");
-   ofp = fopen("parserout.txt", "w");
+   ofp = out;
     
     int i;
-    int lev = 0; //Lexigraphical ldevel
+    int lev = 0; //Lexigraphical level
     int dx = 0; //data index
     int tx = 0; //table index
 
@@ -64,12 +64,14 @@ void parse(void)
     //start program
     program(ifp, table, code);
 
+
     //prints instructions to file
-    for (i=0; i<cx;i++) {
+    for (i = 0; i < cx ; i++) 
+    {
        fprintf(ofp, "%d %d %d\n", code[i].op, code[i].l, code[i].m);
     }
     fclose(ifp);
-    fclose(ofp);
+    fclose(ofp);  
 }
 
 void program(FILE* ifp, symbol* table, instruction* code) 
@@ -77,11 +79,17 @@ void program(FILE* ifp, symbol* table, instruction* code)
 
     token = getNextToken(ifp);
     block(0,0, table, ifp, code);
-  
+
     if (token!=periodsym) 
     {
         error(9); //Period expected.
     }
+    else
+    {
+         emit(9,0,2,code);//HLT
+
+    }
+    
 }
 
 void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code) 
@@ -143,6 +151,9 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
         {
             token = getNextToken(ifp);
 
+            //get identsym, then store it in symbol table, need to store, kind, level, name, dont care about addr.
+
+            //store symbol in the symbol table to fix it later, you need to go back and fix address. you don't have enough info to generate code so you need to store it for later
             if(token==identsym) 
             {
                 enter(3, &tx, &dx, lev, table); //procedure
@@ -160,7 +171,6 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
             }
             //lev++; call lev in block after incrementing
             block(lev+1, tx, table, ifp, code); //Go to a block one level higher
-
             if(token==semicolonsym) 
             {
                 token = getNextToken(ifp);
@@ -169,9 +179,9 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
             {
                 error(5); //Semicolon or comma missing.
             }
+            emit(2,0,0,code);//Debug:
         }
-    }
-   while((token==constsym) || (token==varsym) || (token==procsym));
+    }while((token==constsym) || (token==varsym) || (token==procsym));
 
     //The tentative jump address is fixed up
     code[table[tx0].addr].m=cx;
@@ -181,10 +191,11 @@ void block(int lev, int tx, symbol* table, FILE* ifp, instruction* code)
     cx0=cx;
     emit(6, 0, dx, code); // 6 is INC for op, 0 is for L, and dx is M
     statement(lev, &tx, ifp, code, table);
-    emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
+    //emit(2, 0, 0, code); // 2 is OPR for op, 0 is RET for M inside OPR
 }
 
-void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) {
+void constdeclaration(int lev, int *ptx, int *pdx, FILE* ifp, symbol* table) 
+{
     
     if (token==identsym) {
         token = getNextToken(ifp);
@@ -260,7 +271,7 @@ void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table)
             }
             else if (table[i].kind==3) 
             {//proc
-                emit(5,lev-table[i].level, table[i].addr, code); // 5 is CAL for op, lev-table[i].level is for L, table[i].adr for M
+                emit(5,lev-table[i].level, table[i].addr - 1, code); // 5 is CAL for op, lev-table[i].level is for L, table[i].adr for M
                 //statement::= ["call" ident | ...]
             }
             else 
@@ -354,7 +365,7 @@ void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table)
     {
         token = getNextToken(ifp);
         expression(lev, ptx, ifp, code, table);
-        emit(9,0,1, code); // 9 is SIO1 for op, 0 is for L and 1 for M, write the top stack element to the screen
+        emit(9,0,0, code); // 9 is SIO1 for op, 0 is for L and 1 for M, write the top stack element to the screen
     }
     
     //read needs to read and STO
