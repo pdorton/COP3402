@@ -1,0 +1,1209 @@
+/*
+COP 3402 Lexer Project
+Patrick Dorton
+Michael Garro
+David Almeida
+Andrew Maida
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include "data.h"
+
+void LexIDs(FILE * ifp, int toksize, char symstring[], char currentChar);
+void PrintOutInputFile(FILE * ifpFGETS);
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS);
+
+int main(int argc, char *argv[])
+{
+    FILE * ifp = fopen(argv[1], "r");
+    FILE * ifpFGETS = fopen(argv[1], "r");
+    FILE * ifpNOCOMMENTS = fopen(argv[1], "r");
+
+    char currentChar;
+    char chars[1000];
+
+    int showSource = 0;
+    int showClean = 0;
+    int i;
+    for(i = 0 ; i < argc ; i++)
+    {
+        if(strcmp(argv[i], "--source") == 0)
+        {
+            showSource = 1;
+        }
+        if(strcmp(argv[i], "--clean") == 0)
+        {
+            showClean = 1;
+        }
+    }
+    if(showSource)
+    {
+        printf("source code:\n------------\n");
+        PrintOutInputFile(ifpFGETS);
+    }
+    if(showClean)
+    {
+        printf("\n\nsource code without comments:\n-----------------------------\n");
+        PrintOutInputFileNoComments(ifpNOCOMMENTS);
+    }
+
+    printf("\n");
+
+    while (!feof(ifp))
+    {
+        currentChar = fgetc(ifp);
+
+        if(currentChar == 'i') //if it starts with an i
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'f') //and is followed by an f
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == ' ') //and turns out to be a
+                {
+                    printf("if\t\t\t%d\n", ifsym);
+                }
+                else
+                {
+                    char tok[100];
+                    int size = 3;
+                    strcpy(tok, "if");
+                    strcat(tok, &currentChar);
+                    currentChar = fgetc(ifp);
+                    while(!feof(ifp) && isalnum(currentChar))
+                    {
+                        strcat(tok, &currentChar);
+                        size++;
+                        if(size > 12)
+                        {
+                            printf("Identifier too long.");
+                            exit(0);
+                        }
+                        currentChar = fgetc(ifp);
+                    }
+                    printf("%s\t\t\t%d\n", tok, identsym);
+                    if(currentChar == ',')
+                    {
+                        printf(",\t\t\t%d\n", commasym);
+                    }
+                    else if(currentChar == ';')
+                    {
+                        printf(";\t\t\t%d\n", semicolonsym);
+                    }
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'i';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'n')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'u')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'l')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'l')
+                    {
+                        currentChar = fgetc(ifp);
+                        if((!feof(ifp) && (currentChar == ' ' || currentChar == '\n')) || feof(ifp))
+                        {
+                            printf("null\t\t\t%d\n", nulsym);
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'n';
+                            toks[1] = 'u';
+                            toks[2] = 'l';
+                            toks[3] = 'l';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'n';
+                        toks[1] = 'u';
+                        toks[2] = 'l';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'n';
+                    toks[1] = 'u';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'n';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == '+')
+        {
+            printf("+\t\t\t%d\n", plussym);
+        }
+        else if(currentChar == '-')
+        {
+            printf("-\t\t\t%d\n", minussym);
+        }
+        else if(currentChar == '*')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == '/')
+            {
+                //in a comment
+            }
+            else
+            {
+                printf("*\t\t\t%d\n", multsym);
+            }
+        }
+        else if(currentChar == '/')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == '*')
+            {
+                currentChar = fgetc(ifp);
+                char nextChar = fgetc(ifp);
+                while(!feof(ifp))
+                {
+                    if(currentChar == '*' && nextChar == '/')
+                    {
+                        break;
+                    }
+                    currentChar = nextChar;
+                    nextChar = fgetc(ifp);
+                }
+            }
+            else
+            {
+                printf("/\t\t\t%d\n", slashsym);
+            }
+        }
+        else if(currentChar == 'o')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'd')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'd')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                    {
+                        printf("odd\t\t\t%d\n", oddsym);
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'o';
+                        toks[1] = 'd';
+                        toks[2] = 'd';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'o';
+                    toks[1] = 'd';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'o';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == '=')
+        {
+            printf("=\t\t\t%d\n", eqsym);
+        }
+        else if(currentChar == '<')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == '>')
+            {
+                printf("<>\t\t\t%d\n", neqsym);
+            }
+            else if(!feof(ifp) && currentChar == '=')
+            {
+                printf("<=\t\t\t%d\n", leqsym);
+            }
+            else
+            {
+                printf("<\t\t\t%d\n", lessym);
+            }
+        }
+        else if(currentChar == '>')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == '=')
+            {
+                printf(">=\t\t\t%d\n", geqsym);
+            }
+            else
+            {
+                printf(">\t\t\t%d\n", gtrsym);
+            }
+        }
+        else if(currentChar == '(')
+        {
+            printf("(\t\t\t%d\n", lparentsym);
+        }
+        else if(currentChar == ')')
+        {
+            printf(")\t\t\t%d\n", rparentsym);
+        }
+        else if(currentChar == ',')
+        {
+            printf(",\t\t\t%d\n", commasym);
+        }
+        else if(currentChar == ';')
+        {
+            printf(";\t\t\t%d\n", semicolonsym);
+        }
+        else if(currentChar == '.')
+        {
+            printf(".\t\t\t%d\n", periodsym);
+        }
+        else if(currentChar == ':')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == '=')
+            {
+                printf(":=\t\t\t%d\n", becomessym);
+            }
+            else
+            {
+                printf("Expected = after :");
+                return 0;
+            }
+        }
+        else if(currentChar == 'b')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'e')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'g')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'i')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == 'n')
+                        {
+                            currentChar = fgetc(ifp);
+                            if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                            {
+                                printf("begin\t\t\t%d\n", beginsym);
+                            }
+                            else
+                            {
+                                char toks[100];
+                                toks[0] = 'b';
+                                toks[1] = 'e';
+                                toks[2] = 'g';
+                                toks[3] = 'i';
+                                toks[4] = 'n';
+                                toks[5] = currentChar;
+                                LexIDs(ifp, 6, toks, currentChar);
+                            }
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'b';
+                            toks[1] = 'e';
+                            toks[2] = 'g';
+                            toks[3] = 'i';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'b';
+                        toks[1] = 'e';
+                        toks[2] = 'g';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'b';
+                    toks[1] = 'e';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'b';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'e')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'n')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'd')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == '.')
+                    {
+                        printf("end\t\t\t%d\n", endsym);
+                        printf(".\t\t\t%d\n", periodsym);
+                    }
+                    else if(!feof(ifp) && currentChar == ';')
+                    {
+                        printf("end\t\t\t%d\n", endsym);
+                        printf(";\t\t\t%d\n", semicolonsym);
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'e';
+                        toks[1] = 'n';
+                        toks[2] = 'd';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'e';
+                    toks[1] = 'n';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else if(!feof(ifp) && currentChar == 'l')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 's')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'e')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                        {
+                            printf("else\t\t\t%d\n", elsesym);
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'e';
+                            toks[1] = 'l';
+                            toks[2] = 's';
+                            toks[3] = 'e';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'e';
+                        toks[1] = 'l';
+                        toks[2] = 's';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'e';
+                    toks[1] = 'l';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'e';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 't')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'h')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'e')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'n')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                        {
+                            printf("then\t\t\t%d\n", thensym);
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 't';
+                            toks[1] = 'h';
+                            toks[2] = 'e';
+                            toks[3] = 'n';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 't';
+                        toks[1] = 'h';
+                        toks[2] = 'e';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 't';
+                    toks[1] = 'h';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 't';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'w')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'h')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'i')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'l')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == 'e')
+                        {
+                            currentChar = fgetc(ifp);
+                            if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                            {
+                                printf("while\t\t\t%d\n", whilesym);
+                            }
+                            else
+                            {
+                                char toks[100];
+                                toks[0] = 'w';
+                                toks[1] = 'h';
+                                toks[2] = 'i';
+                                toks[3] = 'l';
+                                toks[4] = 'e';
+                                toks[5] = currentChar;
+                                LexIDs(ifp, 6, toks, currentChar);
+                            }
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'w';
+                            toks[1] = 'h';
+                            toks[2] = 'i';
+                            toks[3] = 'l';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'w';
+                        toks[1] = 'h';
+                        toks[2] = 'i';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'w';
+                    toks[1] = 'h';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'w';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'd')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'o')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                {
+                    printf("do\t\t\t%d\n", dosym);
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'd';
+                    toks[1] = 'o';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'd';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'c')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'a')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'l')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'l')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                        {
+                            printf("call\t\t\t%d\n", callsym);
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'c';
+                            toks[1] = 'a';
+                            toks[2] = 'l';
+                            toks[3] = 'l';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'c';
+                        toks[1] = 'a';
+                        toks[2] = 'l';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'c';
+                    toks[1] = 'a';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else if(!feof(ifp) && currentChar == 'o')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'n')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 's')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == 't')
+                        {
+                            currentChar = fgetc(ifp);
+                            if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                            {
+                                printf("const\t\t\t%d\n", constsym);
+                            }
+                            else
+                            {
+                                char toks[100];
+                                toks[0] = 'c';
+                                toks[1] = 'o';
+                                toks[2] = 'n';
+                                toks[3] = 's';
+                                toks[4] = 't';
+                                toks[5] = currentChar;
+                                LexIDs(ifp, 6, toks, currentChar);
+                            }
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'c';
+                            toks[1] = 'o';
+                            toks[2] = 'n';
+                            toks[3] = 's';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'c';
+                        toks[1] = 'o';
+                        toks[2] = 'n';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'c';
+                    toks[1] = 'o';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'c';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'v')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'a')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'r')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                    {
+                        printf("var\t\t\t%d\n", varsym);
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'v';
+                        toks[1] = 'a';
+                        toks[2] = 'r';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'v';
+                    toks[1] = 'a';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'v';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'p')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'r')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'o')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'c')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == 'e')
+                        {
+                            currentChar = fgetc(ifp);
+                            if(!feof(ifp) && currentChar == 'd')
+                            {
+                                currentChar = fgetc(ifp);
+                                if(!feof(ifp) && currentChar == 'u')
+                                {
+                                    currentChar = fgetc(ifp);
+                                    if(!feof(ifp) && currentChar == 'r')
+                                    {
+                                        currentChar = fgetc(ifp);
+                                        if(!feof(ifp) && currentChar == 'e')
+                                        {
+                                            currentChar = fgetc(ifp);
+                                            if(!feof(ifp) && (currentChar == ' ' || currentChar == '\n'))
+                                            {
+                                                printf("procedure\t\t\t%d\n", procsym);
+                                            }
+                                            else
+                                            {
+                                                char toks[100];
+                                                toks[0] = 'p';
+                                                toks[1] = 'r';
+                                                toks[2] = 'o';
+                                                toks[3] = 'c';
+                                                toks[4] = 'e';
+                                                toks[5] = 'd';
+                                                toks[6] = 'u';
+                                                toks[7] = 'r';
+                                                toks[8] = 'e';
+                                                toks[9] = currentChar;
+                                                LexIDs(ifp, 10, toks, currentChar);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            char toks[100];
+                                            toks[0] = 'p';
+                                            toks[1] = 'r';
+                                            toks[2] = 'o';
+                                            toks[3] = 'c';
+                                            toks[4] = 'e';
+                                            toks[5] = 'd';
+                                            toks[6] = 'u';
+                                            toks[7] = 'r';
+                                            toks[8] = currentChar;
+                                            LexIDs(ifp, 9, toks, currentChar);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        char toks[100];
+                                        toks[0] = 'p';
+                                        toks[1] = 'r';
+                                        toks[2] = 'o';
+                                        toks[3] = 'c';
+                                        toks[4] = 'e';
+                                        toks[5] = 'd';
+                                        toks[6] = 'u';
+                                        toks[7] = currentChar;
+                                        LexIDs(ifp, 8, toks, currentChar);
+                                    }
+                                }
+                                else
+                                {
+                                    char toks[100];
+                                    toks[0] = 'p';
+                                    toks[1] = 'r';
+                                    toks[2] = 'o';
+                                    toks[3] = 'c';
+                                    toks[4] = 'e';
+                                    toks[5] = 'd';
+                                    toks[6] = currentChar;
+                                    LexIDs(ifp, 7, toks, currentChar);
+                                }
+                            }
+                            else
+                            {
+                                char toks[100];
+                                toks[0] = 'p';
+                                toks[1] = 'r';
+                                toks[2] = 'o';
+                                toks[3] = 'c';
+                                toks[4] = 'e';
+                                toks[5] = currentChar;
+                                LexIDs(ifp, 6, toks, currentChar);
+                            }
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'p';
+                            toks[1] = 'r';
+                            toks[2] = 'o';
+                            toks[3] = 'c';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'p';
+                        toks[1] = 'r';
+                        toks[2] = 'o';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'p';
+                    toks[1] = 'r';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'p';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'w')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'r')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'i')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 't')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == 'e')
+                        {
+                            currentChar = fgetc(ifp);
+                            if(!feof(ifp) && currentChar == ' ')
+                            {
+                                printf("write\t\t\t%d\n", writesym);
+                            }
+                            else
+                            {
+                                char toks[100];
+                                toks[0] = 'w';
+                                toks[1] = 'r';
+                                toks[2] = 'i';
+                                toks[3] = 't';
+                                toks[4] = 'e';
+                                toks[5] = currentChar;
+                                LexIDs(ifp, 6, toks, currentChar);
+                            }
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'w';
+                            toks[1] = 'r';
+                            toks[2] = 'i';
+                            toks[3] = 't';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'w';
+                        toks[1] = 'r';
+                        toks[2] = 'i';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'w';
+                    toks[1] = 'r';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'w';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(currentChar == 'r')
+        {
+            currentChar = fgetc(ifp);
+            if(!feof(ifp) && currentChar == 'e')
+            {
+                currentChar = fgetc(ifp);
+                if(!feof(ifp) && currentChar == 'a')
+                {
+                    currentChar = fgetc(ifp);
+                    if(!feof(ifp) && currentChar == 'd')
+                    {
+                        currentChar = fgetc(ifp);
+                        if(!feof(ifp) && currentChar == ' ')
+                        {
+                            printf("read\t\t\t%d\n", readsym);
+                        }
+                        else
+                        {
+                            char toks[100];
+                            toks[0] = 'r';
+                            toks[1] = 'e';
+                            toks[2] = 'a';
+                            toks[3] = 'd';
+                            toks[4] = currentChar;
+                            LexIDs(ifp, 5, toks, currentChar);
+                        }
+                    }
+                    else
+                    {
+                        char toks[100];
+                        toks[0] = 'r';
+                        toks[1] = 'e';
+                        toks[2] = 'a';
+                        toks[3] = currentChar;
+                        LexIDs(ifp, 4, toks, currentChar);
+                    }
+                }
+                else
+                {
+                    char toks[100];
+                    toks[0] = 'r';
+                    toks[1] = 'e';
+                    toks[2] = currentChar;
+                    LexIDs(ifp, 3, toks, currentChar);
+                }
+            }
+            else
+            {
+                char toks[100];
+                toks[0] = 'r';
+                toks[1] = currentChar;
+                LexIDs(ifp, 2, toks, currentChar);
+            }
+        }
+        else if(isalpha(currentChar))
+        {
+            char toks[100];
+            toks[0] = currentChar;
+            LexIDs(ifp, 1, toks, currentChar);
+        }
+        else if(isdigit(currentChar))
+        {
+            char toks[100];
+            toks[0] = currentChar;
+            int idx = 1;
+            currentChar = fgetc(ifp);
+            while(isdigit(currentChar))
+            {
+                toks[idx] = currentChar;
+                idx++;
+                if(idx > 6)
+                {
+                    printf("Integer Overflow");
+                    exit(0);
+                }
+                currentChar = fgetc(ifp);
+            }
+            toks[idx] = '\0';
+            if(atoi(toks) > 65535)
+            {
+                printf("Integer Overflow");
+                exit(0);
+            }
+            if(isalpha(currentChar))
+            {
+                printf("Invalid identifier.");
+                exit(0);
+            }
+            printf("%s\t\t\t%d\n", toks, numbersym);
+            if(currentChar == ',')
+            {
+                printf(",\t\t\t%d\n", commasym);
+            }
+            else if(currentChar == ';')
+            {
+                printf(";\t\t\t%d\n", semicolonsym);
+            }
+            else if(currentChar == ':' && fgetc(ifp) == '=')
+            {
+                printf(":=\t\t\t%d\n", becomessym);
+            }
+            else if(currentChar == '+')
+            {
+                printf("+\t\t\t%d\n", plussym);
+            }
+            else if(currentChar == '-')
+            {
+                printf("-\t\t\t%d\n", minussym);
+            }
+            else if(currentChar == '*')
+            {
+                printf("*\t\t\t%d\n", multsym);
+            }
+            else if(currentChar == '/')
+            {
+                printf("/\t\t\t%d\n", slashsym);
+            }
+        }
+    }
+}
+
+
+void LexIDs(FILE * ifp, int toksize, char symstring[], char currentChar)
+{
+    char tok[100];
+    //strcpy(tok, symstring);
+    //strcat(tok, &currentChar);
+    int size = 0;
+    while(size < toksize)
+    {
+        tok[size] = symstring[size];
+        size++;
+    }
+    currentChar = fgetc(ifp);
+    while(!feof(ifp) && isalnum(currentChar))
+    {
+        //strcat(tok, &currentChar);
+        tok[size] = currentChar;
+        size++;
+        if(size > 12)
+        {
+            printf("Identifier too long.");
+            exit(0);
+        }
+        currentChar = fgetc(ifp);
+    }
+    tok[size] = '\0';
+    printf("%s\t\t\t%d\n", tok, identsym);
+    char nextChar = fgetc(ifp);
+    if(currentChar == ',')
+    {
+        printf(",\t\t\t%d\n", commasym);
+    }
+    else if(currentChar == ';')
+    {
+        printf(";\t\t\t%d\n", semicolonsym);
+    }
+    else if(currentChar == ':' && nextChar == '=')
+    {
+        printf(":=\t\t\t%d\n", becomessym);
+    }
+    else if(currentChar == '+')
+    {
+        printf("+\t\t\t%d\n", plussym);
+    }
+    else if(currentChar == '-')
+    {
+        printf("-\t\t\t%d\n", minussym);
+    }
+    else if(currentChar == '*')
+    {
+        printf("*\t\t\t%d\n", multsym);
+    }
+    else if(currentChar == '/')
+    {
+        printf("/\t\t\t%d\n", slashsym);
+    }
+    else if(currentChar == '<')
+    {
+        printf("<\t\t\t%d\n", lessym);
+    }
+    else if(currentChar == '>')
+    {
+        printf(">\t\t\t%d\n", gtrsym);
+    }
+    else if(currentChar == '<' && nextChar == '>')
+    {
+        printf("<>\t\t\t%d\n", neqsym);
+    }
+    else if(currentChar == '<' && nextChar == '=')
+    {
+        printf("<=\t\t\t%d\n", leqsym);
+    }
+    else if(currentChar == '>' && nextChar == '=')
+    {
+        printf(">=\t\t\t%d\n", geqsym);
+    }
+}
+
+//prints out the input file with comments
+void PrintOutInputFile(FILE * ifpFGETS)
+{
+    char line[500];
+    //reads in an entire line and prints
+    while(fgets(line, 500, ifpFGETS))
+    {
+        printf("%s", line);
+    }
+}
+
+//removes comments and prints out the input file contents
+void PrintOutInputFileNoComments(FILE * ifpNOCOMMENTS)
+{
+    char lineNOCOMMENTS[500];
+    //reads in every line
+    while(fgets(lineNOCOMMENTS, 500, ifpNOCOMMENTS))
+    {
+        //checks if a comment is present and removes the comment
+        if (strstr(lineNOCOMMENTS, "/*") != NULL)
+        {
+            char *a = strstr(lineNOCOMMENTS, "/*");
+            char *b = strstr (lineNOCOMMENTS, "*/");
+            if ((a == NULL) || (b == NULL) || (b < a))
+            {
+                exit(0);
+            }
+
+            memmove(a, b+2, strlen(b)+1);
+        }
+
+        //prints out the line with no comments
+        printf("%s", lineNOCOMMENTS);
+
+    }
+}
