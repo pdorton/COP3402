@@ -372,7 +372,7 @@ void statement(int lev, int *ptx, FILE* ifp, instruction* code, symbol* table)
     else if (token == readsym) 
     {
         token = getNextToken(ifp);
-        emit(10,0,2, code); // 10 is SIO2 for op, 0 is for L and 1 for M, write the top stack element to the screen
+        emit(9,0,1, code); // 10 is SIO2 for op, 0 is for L and 1 for M, write the top stack element to the screen
         i=position(id,ptx, table, lev);
         if(i==0) 
         {

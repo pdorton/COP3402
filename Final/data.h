@@ -55,5 +55,5 @@ extern instruction code[CODE_SIZE];
 //Called by main
 void compile(FILE* in, FILE* out);
 void lex(FILE* in);
-void parse(void);
-void vm(FILE* out);
+void parse(FILE* out);
+void vm(void);

@@ -13,7 +13,7 @@ int base(int* bp, instruction* irStruct, int* stack);
 FILE* ofp2;
 FILE* ofp3;
 
-void vm(FILE* out) 
+void vm(void) 
 {
 
     //Declaring file pointers
